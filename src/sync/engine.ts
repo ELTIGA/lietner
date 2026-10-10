@@ -101,6 +101,11 @@ export class SyncEngine {
     return this.running;
   }
 
+  /** Rows the server refused this session (limits); they stay on this device, unsynced. */
+  get refusedCount(): number {
+    return this.refused.decks.size + this.refused.cards.size;
+  }
+
   /** Rows changed on this device that the server hasn't accepted yet. */
   async unsyncedCount(): Promise<number> {
     const counts = await Promise.all(TABLES.map((table) => this.db.countFromIndex(table, 'dirty', 1)));

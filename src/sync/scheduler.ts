@@ -22,12 +22,15 @@ export class SyncScheduler {
     const onVisible = () => {
       if (document.visibilityState === 'visible') void this.engine.sync();
     };
-    const onOnline = () => void this.engine.sync();
+    // Focus covers side-by-side windows, which never change visibility; the engine coalesces repeats.
+    const onFocus = () => void this.engine.sync();
     document.addEventListener('visibilitychange', onVisible);
-    window.addEventListener('online', onOnline);
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('online', onFocus);
     this.cleanups.push(() => {
       document.removeEventListener('visibilitychange', onVisible);
-      window.removeEventListener('online', onOnline);
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('online', onFocus);
     });
     void this.engine.sync();
   }

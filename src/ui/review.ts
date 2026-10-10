@@ -107,7 +107,10 @@ export class ReviewSession implements SwipeTarget {
   }
 
   swipeStart(): boolean {
-    return !this.ended && !!this.current && this.pending === 0 && !this.app.deps.actor.busy;
+    if (this.ended || !this.current || this.pending > 0) return false;
+    // A swipe that starts while the card is still flying in lands it first, so fast sessions stay fast.
+    this.app.deps.actor.finish();
+    return true;
   }
 
   swipeMove(dx: number): void {

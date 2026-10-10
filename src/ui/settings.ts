@@ -1,4 +1,6 @@
+import type { Backup } from '../data/backup';
 import { exportBackup, importBackup, parseBackup } from '../data/backup';
+import type { Database } from '../data/db';
 import type { AnimationSpeed } from '../scene/views';
 import { t } from '../strings';
 import type { App } from './app';
@@ -11,9 +13,17 @@ const SPEEDS: Array<[AnimationSpeed, string]> = [
   [0, t.settings.speedInstant],
 ];
 
+/** Downloads every live deck and card as a JSON backup file. */
+export async function downloadBackup(db: Database): Promise<Backup> {
+  const backup = await exportBackup(db);
+  downloadText(t.settings.backupFilename(new Date().toISOString().slice(0, 10)), JSON.stringify(backup, null, 2));
+  return backup;
+}
+
 export class SettingsDialog {
   readonly element = h('dialog', { class: 'dialog', 'aria-label': t.settings.title });
   private opener: HTMLElement | null = null;
+  private readonly accountBox = h('div', { class: 'account-section' });
 
   constructor(private readonly app: App) {
     this.element.addEventListener('click', (event) => {
@@ -35,7 +45,37 @@ export class SettingsDialog {
     this.element.showModal();
   }
 
+  /** Updates the account section in place while open (sign-in state or sync status changed). */
+  refresh(): void {
+    if (this.isOpen) this.accountBox.replaceChildren(...this.accountSection());
+  }
+
+  private accountSection(): HTMLElement[] {
+    const { account } = this.app;
+    if (!account.available) return [];
+    if (!account.user) {
+      return [
+        h('h3', {}, t.account.section),
+        h('p', { class: 'hint' }, t.account.guestHint),
+        h('div', { class: 'row' }, h('button', { class: 'btn primary', type: 'button', onclick: () => void account.signIn() }, t.account.signIn)),
+      ];
+    }
+    const status = account.refusedCount ? t.sync.refused(account.refusedCount) : t.sync[account.status ?? 'syncing'];
+    return [
+      h('h3', {}, t.account.section),
+      h('p', { class: 'account-line' }, t.account.signedIn(account.user.email)),
+      h('p', { class: 'hint', 'aria-live': 'polite' }, status),
+      h(
+        'div',
+        { class: 'row' },
+        h('button', { class: 'btn', type: 'button', onclick: () => void account.signOut() }, t.account.signOut),
+        h('button', { class: 'btn danger-btn', type: 'button', onclick: () => void account.deleteAccount() }, t.account.deleteAccount),
+      ),
+    ];
+  }
+
   private render(): void {
+    this.accountBox.replaceChildren(...this.accountSection());
     const status = h('p', { class: 'hint', 'aria-live': 'polite' });
     const speedGroup = h(
       'div',
@@ -56,8 +96,7 @@ export class SettingsDialog {
     );
 
     const exportJson = async () => {
-      const backup = await exportBackup(this.app.deps.db);
-      downloadText(t.settings.backupFilename(new Date().toISOString().slice(0, 10)), JSON.stringify(backup, null, 2));
+      const backup = await downloadBackup(this.app.deps.db);
       status.textContent = t.settings.exported(backup.decks.length, backup.cards.length);
     };
     const file = h('input', { type: 'file', accept: 'application/json,.json', class: 'file-input', 'aria-label': t.settings.backupFile });
@@ -90,8 +129,9 @@ export class SettingsDialog {
         h('div', { class: 'drawer-head' }, h('h2', {}, t.settings.title), h('button', { class: 'btn icon', 'aria-label': t.settings.close, value: 'close' }, '✕')),
         h('h3', {}, t.settings.speed),
         speedGroup,
+        this.accountBox,
         h('h3', {}, t.settings.backup),
-        h('p', { class: 'hint' }, t.settings.backupHint),
+        h('p', { class: 'hint' }, this.app.account.user ? t.settings.backupHintSignedIn : t.settings.backupHint),
         h(
           'div',
           { class: 'row' },

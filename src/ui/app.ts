@@ -7,6 +7,7 @@ import type { Card, Deck } from '../domain/types';
 import { MASTERED } from '../domain/types';
 import type { AnimationSpeed, CardView, DeskView } from '../scene/views';
 import { t } from '../strings';
+import { Account } from './account';
 import { DeckEditor } from './deckEditor';
 import { promptDialog } from './dialog';
 import { anyDialogOpen, h, isTyping, kbd } from './dom';
@@ -41,6 +42,9 @@ export class App {
   private readonly editor: DeckEditor;
   private readonly settings: SettingsDialog;
   private session: ReviewSession | null = null;
+  /** Sync pulled changes while a review or the editor was open; redraw when it closes. */
+  private reloadPending = false;
+  readonly account: Account;
 
   constructor(
     host: HTMLElement,
@@ -48,6 +52,11 @@ export class App {
   ) {
     this.editor = new DeckEditor(this);
     this.settings = new SettingsDialog(this);
+    this.account = new Account(this);
+    this.account.onChange(() => {
+      this.renderTopbar();
+      this.settings.refresh();
+    });
     this.root.append(this.topbar, this.stage, this.editor.element, this.settings.element);
     host.append(this.root);
     window.addEventListener('keydown', this.onKey);
@@ -61,6 +70,8 @@ export class App {
     this.decks = await this.deps.repo.listDecks();
     const lastId = await this.deps.repo.getMeta<string>(META_LAST_DECK);
     await this.selectDeck(this.decks.find((deck) => deck.id === lastId) ?? this.decks[0] ?? null);
+    // Local data is on screen; the account (and its network) comes second.
+    void this.account.restore();
   }
 
   get dueCount(): number {
@@ -75,8 +86,15 @@ export class App {
     this.refresh();
   }
 
+  /** Sync changed local data: redraw now, or as soon as the review or the editor closes. */
+  onRemoteChanges(): void {
+    if (this.session || this.editor.isOpen) this.reloadPending = true;
+    else void this.reload();
+  }
+
   /** Reload decks and cards from storage, then redraw. */
   async reload(): Promise<void> {
+    this.reloadPending = false;
     this.decks = await this.deps.repo.listDecks();
     const current = this.decks.find((deck) => deck.id === this.deck?.id) ?? this.decks[0] ?? null;
     await this.selectDeck(current);
@@ -128,7 +146,8 @@ export class App {
     this.editor.close();
     this.session = new ReviewSession(this, this.stage, () => {
       this.session = null;
-      this.refresh();
+      if (this.reloadPending) void this.reload();
+      else this.refresh();
     });
     this.renderTopbar();
     void this.session.start();
@@ -180,7 +199,25 @@ export class App {
         },
         label,
       );
+    const { account } = this;
+    const signIn = account.available && !account.user && !reviewing;
     menu.append(...actions.map(([label, run]) => menuItem(label, run)), menuItem(t.topbar.settings, () => this.settings.open()));
+    if (signIn) menu.append(menuItem(t.account.signIn, () => void account.signIn()));
+    const syncChip =
+      account.user &&
+      h(
+        'button',
+        {
+          class: 'sync-chip',
+          type: 'button',
+          dataset: { state: account.refusedCount ? 'refused' : (account.status ?? 'syncing') },
+          title: account.refusedCount ? t.sync.refused(account.refusedCount) : t.sync[account.status ?? 'syncing'],
+          'aria-label': account.refusedCount ? t.sync.refused(account.refusedCount) : t.sync[account.status ?? 'syncing'],
+          onclick: () => this.settings.open(),
+        },
+        h('span', { class: 'sync-dot', 'aria-hidden': 'true' }),
+        h('span', { class: 'sync-label' }, t.sync[account.status ?? 'syncing']),
+      );
 
     this.topbar.replaceChildren(
       h('div', { class: 'brand' }, h('span', { class: 'brand-mark', 'aria-hidden': 'true' }, t.brandMark), h('span', { class: 'brand-name' }, t.appName)),
@@ -188,7 +225,9 @@ export class App {
       h(
         'div',
         { class: 'topbar-actions' },
+        syncChip,
         ...actions.map(([label, run, keys]) => h('button', { class: 'btn ghost wide-only', onclick: run }, label, keys)),
+        signIn && h('button', { class: 'btn ghost wide-only', onclick: () => void account.signIn() }, t.account.signIn),
         h('button', { class: 'btn icon wide-only', 'aria-label': t.topbar.settings, title: t.topbar.settings, onclick: () => this.settings.open() }, '⚙'),
         h('button', { class: 'btn icon narrow-only', 'aria-label': t.topbar.menu, title: t.topbar.menu, popovertarget: 'topbar-menu' }, '⋯'),
         menu,
