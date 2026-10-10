@@ -72,19 +72,30 @@ export class DeckEditor {
     });
 
     this.element.replaceChildren(
-      h(
-        'div',
-        { class: 'drawer-head' },
-        name,
-        h('button', { class: 'btn icon', 'aria-label': t.editor.close, onclick: () => this.close() }, '✕'),
-      ),
+      h('div', { class: 'drawer-head' }, name, h('button', { class: 'btn icon', 'aria-label': t.editor.close, onclick: () => this.close() }, '✕')),
       h('div', { class: 'drawer-body' }, this.addForm(), this.importSection(), this.cardList(), this.dangerZone()),
     );
   }
 
   private addForm(): HTMLElement {
-    const front = h('textarea', { class: 'field', rows: 2, placeholder: t.editor.frontPlaceholder, 'aria-label': t.editor.front, required: true, dir: 'auto', maxLength: LIMITS.sideChars });
-    const back = h('textarea', { class: 'field', rows: 2, placeholder: t.editor.backPlaceholder, 'aria-label': t.editor.back, required: true, dir: 'auto', maxLength: LIMITS.sideChars });
+    const front = h('textarea', {
+      class: 'field',
+      rows: 2,
+      placeholder: t.editor.frontPlaceholder,
+      'aria-label': t.editor.front,
+      required: true,
+      dir: 'auto',
+      maxLength: LIMITS.sideChars,
+    });
+    const back = h('textarea', {
+      class: 'field',
+      rows: 2,
+      placeholder: t.editor.backPlaceholder,
+      'aria-label': t.editor.back,
+      required: true,
+      dir: 'auto',
+      maxLength: LIMITS.sideChars,
+    });
     const submit = async (event: Event) => {
       event.preventDefault();
       if (!front.value.trim() || !back.value.trim() || !this.app.deck) return;
@@ -187,7 +198,11 @@ export class DeckEditor {
     return h(
       'li',
       { class: 'card-row' },
-      h('span', { class: `box-badge b${card.box}`, title: card.box === MASTERED ? t.editor.mastered : t.editor.box(card.box) }, card.box === MASTERED ? '★' : String(card.box)),
+      h(
+        'span',
+        { class: `box-badge b${card.box}`, title: card.box === MASTERED ? t.editor.mastered : t.editor.box(card.box) },
+        card.box === MASTERED ? '★' : String(card.box),
+      ),
       front,
       back,
       h('button', { class: 'btn icon small', 'aria-label': t.editor.deleteCard(card.front), onclick: remove }, '✕'),

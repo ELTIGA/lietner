@@ -1,6 +1,7 @@
 /** Text layout helpers for card faces, kept free of canvas and three.js so they can be unit tested. */
 
-const RTL_SCRIPTS = /[\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Thaana}\p{Script=Nko}\p{Script=Adlam}\p{Script=Samaritan}\p{Script=Mandaic}]/u;
+const RTL_SCRIPTS =
+  /[\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Thaana}\p{Script=Nko}\p{Script=Adlam}\p{Script=Samaritan}\p{Script=Mandaic}]/u;
 const FIRST_LETTER = /\p{L}/u;
 const WHITESPACE = /^\s+$/u;
 const PUNCTUATION = /^\p{P}+$/u;
@@ -21,7 +22,11 @@ interface Piece {
 }
 
 function pieces(paragraph: string): Piece[] {
-  if (!wordSegmenter) return paragraph.split(/(\s+)/).filter(Boolean).map((text) => ({ text, breakBefore: true }));
+  if (!wordSegmenter)
+    return paragraph
+      .split(/(\s+)/)
+      .filter(Boolean)
+      .map((text) => ({ text, breakBefore: true }));
   // Word segmentation finds break points in scripts without spaces (Chinese, Japanese, Thai).
   return Array.from(wordSegmenter.segment(paragraph), ({ segment }) => ({ text: segment, breakBefore: !PUNCTUATION.test(segment) }));
 }

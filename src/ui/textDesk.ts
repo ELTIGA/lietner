@@ -83,7 +83,11 @@ export class TextCard implements CardView {
     this.desk.setCount(from, this.desk.count(from) - 1);
     this.element.hidden = false;
     const timeline = gsap.timeline();
-    timeline.fromTo(this.element, { autoAlpha: 0, y: -60, scale: 0.85, x: 0, rotation: 0 }, { autoAlpha: 1, y: 0, scale: 1, duration: DURATION.draw, ease: 'power3.out' });
+    timeline.fromTo(
+      this.element,
+      { autoAlpha: 0, y: -60, scale: 0.85, x: 0, rotation: 0 },
+      { autoAlpha: 1, y: 0, scale: 1, duration: DURATION.draw, ease: 'power3.out' },
+    );
     return this.run(timeline);
   }
 

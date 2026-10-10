@@ -33,7 +33,9 @@ export function parseImport(text: string): ImportResult {
 
   const items: unknown[] | null = Array.isArray(value) ? value : isRecord(value) && Array.isArray(value.cards) ? value.cards : null;
   if (!items) return badJson();
-  const result: ImportResult = collectCards(items.map((item): [string, string] => (isRecord(item) ? [side(item, FRONT_HEADERS), side(item, BACK_HEADERS)] : ['', ''])));
+  const result: ImportResult = collectCards(
+    items.map((item): [string, string] => (isRecord(item) ? [side(item, FRONT_HEADERS), side(item, BACK_HEADERS)] : ['', ''])),
+  );
   const deckName = isRecord(value) && typeof value.deck === 'string' ? value.deck.trim() : '';
   if (deckName) result.deckName = deckName;
   return result;

@@ -32,7 +32,10 @@ describe('telemetry scrubbing', () => {
       contexts: { browser: { name: 'Chrome' }, state: { card: 'mañana' } },
       request: { url: 'https://lietner.app/?today=3', headers: { 'User-Agent': 'UA', Cookie: 'x' }, data: 'body' },
       exception: { values: [{ type: 'Error', value: 'Bad card "hola"' }] },
-      breadcrumbs: [{ category: 'console', message: 'hola' }, { category: 'navigation', data: { from: '/?a=1', to: '/privacy' } }],
+      breadcrumbs: [
+        { category: 'console', message: 'hola' },
+        { category: 'navigation', data: { from: '/?a=1', to: '/privacy' } },
+      ],
     } as unknown as ErrorEvent;
     const scrubbed = scrubEvent(event);
     expect(JSON.stringify(scrubbed)).not.toMatch(/mañana|hola|1\.2\.3\.4|Cookie|today=3|body/);

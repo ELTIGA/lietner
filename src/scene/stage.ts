@@ -12,7 +12,9 @@ interface Rig {
 const LANDSCAPE_HOME = new THREE.Vector3(0, 6.6, 5.6);
 const LANDSCAPE: Rig = {
   lookAt: new THREE.Vector3(0, 0.1, -0.9),
-  direction: LANDSCAPE_HOME.clone().sub(new THREE.Vector3(0, 0.1, -0.9)).normalize(),
+  direction: LANDSCAPE_HOME.clone()
+    .sub(new THREE.Vector3(0, 0.1, -0.9))
+    .normalize(),
 };
 const LANDSCAPE_DISTANCE = LANDSCAPE_HOME.distanceTo(LANDSCAPE.lookAt);
 /** Half-width of desk content (the box row) that must stay in frame in landscape. */

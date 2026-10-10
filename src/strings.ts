@@ -36,7 +36,8 @@ export const t = {
   starter: {
     title: 'Before you start, let an AI write your cards.',
     copyStep: 'Copy the prompt',
-    copyHint: 'Paste it into your favourite AI (ChatGPT, Claude, Gemini…) and attach the book, PDF or notes you want to study. It asks you three quick questions, then writes about 30 cards.',
+    copyHint:
+      'Paste it into your favourite AI (ChatGPT, Claude, Gemini…) and attach the book, PDF or notes you want to study. It asks you three quick questions, then writes about 30 cards.',
     copyPrompt: 'Copy prompt',
     copied: 'Copied ✓',
     copyFailed: 'Your browser blocked copying. Select the prompt below and copy it yourself.',

@@ -50,7 +50,13 @@ export class StarterSheet {
       { class: 'home-panel starter' },
       h(
         'button',
-        { class: 'btn icon starter-close', type: 'button', 'aria-label': t.starter.discard, title: t.starter.discard, onclick: () => void app.discardEmptyDeck() },
+        {
+          class: 'btn icon starter-close',
+          type: 'button',
+          'aria-label': t.starter.discard,
+          title: t.starter.discard,
+          onclick: () => void app.discardEmptyDeck(),
+        },
         '✕',
       ),
       h('p', { class: 'eyebrow' }, deck?.name ?? ''),

@@ -65,7 +65,14 @@ export function openSignIn(account: Account): Promise<SessionUser | null> {
       });
 
       // ---- Email code ----
-      const email = h('input', { class: 'field', type: 'email', autocomplete: 'email', inputMode: 'email', required: true, placeholder: t.account.emailPlaceholder });
+      const email = h('input', {
+        class: 'field',
+        type: 'email',
+        autocomplete: 'email',
+        inputMode: 'email',
+        required: true,
+        placeholder: t.account.emailPlaceholder,
+      });
       const sendButton = h('button', { class: 'btn primary', type: 'submit' }, t.account.sendCode);
       const code = h('input', {
         class: 'field code-field',

@@ -51,11 +51,7 @@ export function openDialog<T>(spec: DialogSpec<T>): Promise<T> {
     });
 
     const actions = spec.actions?.map((action) =>
-      h(
-        'button',
-        { class: TONE_CLASS[action.tone ?? 'plain'], type: 'button', autofocus: action.autofocus, onclick: () => close(action.value) },
-        action.label,
-      ),
+      h('button', { class: TONE_CLASS[action.tone ?? 'plain'], type: 'button', autofocus: action.autofocus, onclick: () => close(action.value) }, action.label),
     );
 
     dialog.append(
@@ -84,7 +80,10 @@ export interface ConfirmOptions {
   danger?: boolean;
 }
 
-export function confirmDialog(message: string, { title, confirmLabel = t.dialog.ok, cancelLabel = t.dialog.cancel, danger = false }: ConfirmOptions): Promise<boolean> {
+export function confirmDialog(
+  message: string,
+  { title, confirmLabel = t.dialog.ok, cancelLabel = t.dialog.cancel, danger = false }: ConfirmOptions,
+): Promise<boolean> {
   return openDialog<boolean>({
     title,
     cancelValue: false,

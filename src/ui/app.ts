@@ -12,9 +12,9 @@ import { DeckEditor } from './deckEditor';
 import { promptDialog } from './dialog';
 import { anyDialogOpen, h, isTyping, kbd } from './dom';
 import { attachSwipe } from './gestures';
+import { isIosSafari } from './pwa';
 import { ReviewSession } from './review';
 import { SettingsDialog } from './settings';
-import { isIosSafari } from './pwa';
 import { StarterSheet } from './starterSheet';
 import { showError } from './toast';
 
@@ -254,7 +254,10 @@ export class App {
       );
     const { account } = this;
     const signIn = account.available && !account.user && !reviewing;
-    menu.append(...actions.map(([label, run]) => menuItem(label, run)), menuItem(t.topbar.settings, () => this.settings.open()));
+    menu.append(
+      ...actions.map(([label, run]) => menuItem(label, run)),
+      menuItem(t.topbar.settings, () => this.settings.open()),
+    );
     if (signIn) menu.append(menuItem(t.account.signIn, () => void account.signIn()));
     const syncChip =
       account.user &&
@@ -398,7 +401,12 @@ function footerLinks(): HTMLElement {
     h('a', { href: '/privacy' }, t.footer.privacy),
     h('a', { href: '/terms' }, t.footer.terms),
     h('a', { href: 'https://github.com/ELTIGA/lietner', target: '_blank', rel: 'noopener' }, t.footer.source),
-    h('span', { class: 'panel-credit' }, `${t.footer.builtBy} `, h('a', { href: 'https://ahmedeltigani.com', target: '_blank', rel: 'noopener' }, t.footer.author)),
+    h(
+      'span',
+      { class: 'panel-credit' },
+      `${t.footer.builtBy} `,
+      h('a', { href: 'https://ahmedeltigani.com', target: '_blank', rel: 'noopener' }, t.footer.author),
+    ),
   );
 }
 

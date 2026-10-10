@@ -34,7 +34,11 @@ test.describe('deck editor', () => {
     await expect(page.locator('.home-status')).toHaveText('1 card due today');
 
     await page.keyboard.press('e');
-    if (!(await editor.isVisible())) await page.getByRole('button', { name: /Edit deck|Menu/ }).first().click();
+    if (!(await editor.isVisible()))
+      await page
+        .getByRole('button', { name: /Edit deck|Menu/ })
+        .first()
+        .click();
     await expect(editor).toBeVisible();
     await expect(editor.locator('.card-row').first().getByRole('textbox', { name: 'Front' })).toHaveValue('ribosome');
     await editor.getByRole('button', { name: /Delete card ribosome/ }).click();

@@ -15,7 +15,14 @@ const COLUMNS: Record<Table, string> = {
 const FETCH_CHUNK = 100;
 
 /** Auth errors meaning this device's session is over for good (signed out everywhere, or revoked). */
-const SESSION_ENDED_CODES = new Set(['session_not_found', 'refresh_token_not_found', 'refresh_token_already_used', 'session_expired', 'bad_jwt', 'no_authorization']);
+const SESSION_ENDED_CODES = new Set([
+  'session_not_found',
+  'refresh_token_not_found',
+  'refresh_token_already_used',
+  'session_expired',
+  'bad_jwt',
+  'no_authorization',
+]);
 
 interface DeckRow {
   id: string;

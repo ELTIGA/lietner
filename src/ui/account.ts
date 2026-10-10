@@ -1,11 +1,11 @@
-import type { SessionUser } from '../auth/session';
 import { hasStoredSession, storedSessionUser, syncAvailable } from '../auth/config';
+import type { SessionUser } from '../auth/session';
 import { wipeAccountData } from '../data/wipe';
+import { t } from '../strings';
 import type { SyncStatus } from '../sync/engine';
 import { SyncEngine } from '../sync/engine';
 import type { AccountState } from '../sync/remote';
 import { SyncScheduler } from '../sync/scheduler';
-import { t } from '../strings';
 import type { App } from './app';
 import { confirmDialog, openDialog } from './dialog';
 import { downloadBackup } from './settings';

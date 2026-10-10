@@ -126,7 +126,12 @@ export class SettingsDialog {
       h(
         'form',
         { method: 'dialog', class: 'dialog-body' },
-        h('div', { class: 'drawer-head' }, h('h2', {}, t.settings.title), h('button', { class: 'btn icon', 'aria-label': t.settings.close, value: 'close' }, '✕')),
+        h(
+          'div',
+          { class: 'drawer-head' },
+          h('h2', {}, t.settings.title),
+          h('button', { class: 'btn icon', 'aria-label': t.settings.close, value: 'close' }, '✕'),
+        ),
         h('h3', {}, t.settings.speed),
         speedGroup,
         this.accountBox,

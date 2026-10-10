@@ -7,7 +7,7 @@ import { createClient, isAuthApiError, isAuthRetryableFetchError } from '@supaba
 
 import type { Remote } from '../sync/remote';
 import { SupabaseRemote } from '../sync/supabaseRemote';
-import { AUTH_STORAGE_KEY, storedSessionUser, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './config';
+import { AUTH_STORAGE_KEY, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL, storedSessionUser } from './config';
 
 export interface SessionUser {
   id: string;
@@ -52,7 +52,6 @@ export async function currentUser(): Promise<SessionUser | null> {
   const user = data.session?.user ?? storedSessionUser();
   return user ? { id: user.id, email: user.email ?? '' } : null;
 }
-
 
 /**
  * Turns Supabase Auth errors into what the sign-in dialog can explain. A failed send

@@ -97,10 +97,7 @@ export class Desk implements DeskView {
   }
 
   private buildDesk(): THREE.Object3D {
-    const top = new THREE.Mesh(
-      new THREE.BoxGeometry(14, 0.3, 16),
-      new THREE.MeshStandardMaterial({ map: woodTexture(), roughness: 0.55, metalness: 0.05 }),
-    );
+    const top = new THREE.Mesh(new THREE.BoxGeometry(14, 0.3, 16), new THREE.MeshStandardMaterial({ map: woodTexture(), roughness: 0.55, metalness: 0.05 }));
     top.position.set(0, -0.15, 1.8);
     top.receiveShadow = true;
     return top;

@@ -19,7 +19,15 @@ interface GoogleAccountsId {
   }): void;
   renderButton(
     parent: HTMLElement,
-    options: { type?: 'standard'; theme?: 'outline' | 'filled_black'; size?: 'large'; text?: 'continue_with'; shape?: 'rectangular' | 'pill'; width?: number; logo_alignment?: 'left' },
+    options: {
+      type?: 'standard';
+      theme?: 'outline' | 'filled_black';
+      size?: 'large';
+      text?: 'continue_with';
+      shape?: 'rectangular' | 'pill';
+      width?: number;
+      logo_alignment?: 'left';
+    },
   ): void;
 }
 
@@ -72,11 +80,7 @@ async function sha256Hex(text: string): Promise<string> {
  * in the token; Supabase gets the raw nonce and checks they match. No redirect through
  * the *.supabase.co URL, so the consent screen shows lietner.app.
  */
-export async function renderGoogleButton(
-  container: HTMLElement,
-  clientId: string,
-  onCredential: (idToken: string, rawNonce: string) => void,
-): Promise<void> {
+export async function renderGoogleButton(container: HTMLElement, clientId: string, onCredential: (idToken: string, rawNonce: string) => void): Promise<void> {
   const id = await loadScript();
   const rawNonce = randomNonce();
   id.initialize({
@@ -87,5 +91,12 @@ export async function renderGoogleButton(
     use_fedcm_for_button: true,
     callback: ({ credential }) => onCredential(credential, rawNonce),
   });
-  id.renderButton(container, { type: 'standard', theme: 'outline', size: 'large', text: 'continue_with', shape: 'rectangular', width: Math.min(container.clientWidth || 320, 400) });
+  id.renderButton(container, {
+    type: 'standard',
+    theme: 'outline',
+    size: 'large',
+    text: 'continue_with',
+    shape: 'rectangular',
+    width: Math.min(container.clientWidth || 320, 400),
+  });
 }

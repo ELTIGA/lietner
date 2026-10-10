@@ -19,7 +19,10 @@ html {
 body {
   margin: 0;
   padding: max(24px, env(safe-area-inset-top)) 16px 48px;
-  font: 16px/1.65 'IBM Plex Sans', system-ui, sans-serif;
+  font:
+    16px / 1.65 'IBM Plex Sans',
+    system-ui,
+    sans-serif;
   color: var(--ink);
 }
 
@@ -38,7 +41,10 @@ body {
   gap: 10px;
   margin-bottom: 28px;
   color: var(--ink);
-  font: 600 18px 'Fraunces', Georgia, serif;
+  font:
+    600 18px 'Fraunces',
+    Georgia,
+    serif;
   text-decoration: none;
 }
 

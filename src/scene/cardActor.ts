@@ -206,8 +206,7 @@ export class CardActor implements CardView {
   /** Point in front of the camera where the card is read; the card faces the camera. */
   private focusSlot(): Slot {
     const distance = this.focusDistance();
-    const lift =
-      this.camera.aspect >= 1 ? LANDSCAPE_FOCUS_LIFT : PORTRAIT_FOCUS_LIFT * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) * distance;
+    const lift = this.camera.aspect >= 1 ? LANDSCAPE_FOCUS_LIFT : PORTRAIT_FOCUS_LIFT * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) * distance;
     const position = new THREE.Vector3(0, lift, -distance).applyMatrix4(this.camera.matrixWorld);
     const holder = new THREE.Object3D();
     holder.position.copy(position);

@@ -46,7 +46,10 @@ export function scrubEvent(event: ErrorEvent): ErrorEvent {
     scrubbed.contexts = Object.fromEntries(Object.entries(scrubbed.contexts).filter(([key]) => KEPT_CONTEXTS.has(key)));
   }
   if (scrubbed.request) {
-    scrubbed.request = { url: scrubbed.request.url && stripQuery(scrubbed.request.url), headers: scrubbed.request.headers?.['User-Agent'] ? { 'User-Agent': scrubbed.request.headers['User-Agent'] } : undefined };
+    scrubbed.request = {
+      url: scrubbed.request.url && stripQuery(scrubbed.request.url),
+      headers: scrubbed.request.headers?.['User-Agent'] ? { 'User-Agent': scrubbed.request.headers['User-Agent'] } : undefined,
+    };
   }
   if (scrubbed.message) scrubbed.message = scrubText(scrubbed.message);
   if (scrubbed.exception?.values) {

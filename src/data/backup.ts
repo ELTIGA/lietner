@@ -27,9 +27,17 @@ export async function exportBackup(db: Database): Promise<Backup> {
     version: BACKUP_VERSION,
     exportedAt: new Date().toISOString(),
     decks: decks.filter(isLive).map(({ id, name, createdAt, updatedAt, sample }) => ({ id, name, createdAt, updatedAt, ...(sample ? { sample } : {}) })),
-    cards: cards
-      .filter(isLive)
-      .map(({ id, deckId, front, back, box, dueDay, createdAt, updatedAt, history }) => ({ id, deckId, front, back, box, dueDay, createdAt, updatedAt, history })),
+    cards: cards.filter(isLive).map(({ id, deckId, front, back, box, dueDay, createdAt, updatedAt, history }) => ({
+      id,
+      deckId,
+      front,
+      back,
+      box,
+      dueDay,
+      createdAt,
+      updatedAt,
+      history,
+    })),
   };
 }
 
