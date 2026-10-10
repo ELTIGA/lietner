@@ -74,6 +74,7 @@ export class SettingsDialog {
         });
         if (!ok) return;
         await importBackup(this.app.deps.db, backup);
+        this.app.deps.repo.notifyChanged();
         await this.app.reload();
         status.textContent = t.settings.restored;
       } catch (error) {

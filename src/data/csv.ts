@@ -1,10 +1,14 @@
 import Papa from 'papaparse';
 
 import type { CardDraft } from '../domain/types';
+import { charLength, LIMITS } from '../domain/types';
 
 export interface CsvResult {
   cards: CardDraft[];
+  /** Rows missing a front or back. */
   skipped: number;
+  /** Rows with a side longer than LIMITS.sideChars. */
+  tooLong: number;
 }
 
 const FRONT_HEADERS = ['front', 'question', 'term', 'word', 'q'];
@@ -39,11 +43,13 @@ export function parseCards(text: string): CsvResult {
 
   const cards: CardDraft[] = [];
   let skipped = 0;
+  let tooLong = 0;
   for (const row of rows) {
     const front = row[frontIndex]?.trim() ?? '';
     const back = row[backIndex]?.trim() ?? '';
-    if (front && back) cards.push({ front, back });
-    else skipped++;
+    if (!front || !back) skipped++;
+    else if (charLength(front) > LIMITS.sideChars || charLength(back) > LIMITS.sideChars) tooLong++;
+    else cards.push({ front, back });
   }
-  return { cards, skipped };
+  return { cards, skipped, tooLong };
 }

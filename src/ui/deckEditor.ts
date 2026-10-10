@@ -2,11 +2,12 @@ import { parseCards } from '../data/csv';
 import type { CsvResult } from '../data/csv';
 import { today } from '../domain/day';
 import type { Card } from '../domain/types';
-import { MASTERED } from '../domain/types';
+import { LIMITS, MASTERED } from '../domain/types';
 import { t } from '../strings';
 import type { App } from './app';
 import { confirmDialog } from './dialog';
 import { h } from './dom';
+import { showError } from './toast';
 
 /** Slide-in drawer for renaming a deck, adding/importing cards and editing the card list. */
 export class DeckEditor {
@@ -57,7 +58,7 @@ export class DeckEditor {
       'aria-label': t.editor.deckName,
       dir: 'auto',
       maxLength: 80,
-      onchange: () => void this.app.deps.repo.renameDeck(deck.id, name.value),
+      onchange: () => void this.app.deps.repo.renameDeck(deck.id, name.value).catch((error: unknown) => showError(error, t.errors.saveFailed)),
     });
 
     this.element.replaceChildren(
@@ -72,12 +73,17 @@ export class DeckEditor {
   }
 
   private addForm(): HTMLElement {
-    const front = h('textarea', { class: 'field', rows: 2, placeholder: t.editor.frontPlaceholder, 'aria-label': t.editor.front, required: true, dir: 'auto' });
-    const back = h('textarea', { class: 'field', rows: 2, placeholder: t.editor.backPlaceholder, 'aria-label': t.editor.back, required: true, dir: 'auto' });
+    const front = h('textarea', { class: 'field', rows: 2, placeholder: t.editor.frontPlaceholder, 'aria-label': t.editor.front, required: true, dir: 'auto', maxLength: LIMITS.sideChars });
+    const back = h('textarea', { class: 'field', rows: 2, placeholder: t.editor.backPlaceholder, 'aria-label': t.editor.back, required: true, dir: 'auto', maxLength: LIMITS.sideChars });
     const submit = async (event: Event) => {
       event.preventDefault();
       if (!front.value.trim() || !back.value.trim() || !this.app.deck) return;
-      await this.app.deps.repo.addCards(this.app.deck.id, [{ front: front.value, back: back.value }], today());
+      try {
+        await this.app.deps.repo.addCards(this.app.deck.id, [{ front: front.value, back: back.value }], today());
+      } catch (error) {
+        showError(error, t.errors.saveFailed);
+        return;
+      }
       await this.refreshCards();
       front.value = '';
       back.value = '';
@@ -106,7 +112,7 @@ export class DeckEditor {
       this.pendingImport = text.trim() ? parseCards(text) : null;
       const result = this.pendingImport;
       confirm.disabled = !result?.cards.length;
-      preview.textContent = result ? t.editor.importReady(result.cards.length, result.skipped) : '';
+      preview.textContent = result ? t.editor.importReady(result.cards.length, result.skipped, result.tooLong) : '';
     };
     const file = h('input', {
       type: 'file',
@@ -124,7 +130,12 @@ export class DeckEditor {
     confirm.addEventListener('click', async () => {
       if (!this.pendingImport?.cards.length || !this.app.deck) return;
       const count = this.pendingImport.cards.length;
-      await this.app.deps.repo.addCards(this.app.deck.id, this.pendingImport.cards, today());
+      try {
+        await this.app.deps.repo.addCards(this.app.deck.id, this.pendingImport.cards, today());
+      } catch (error) {
+        showError(error, t.errors.saveFailed);
+        return;
+      }
       paste.value = '';
       file.value = '';
       preparse('');
@@ -154,9 +165,11 @@ export class DeckEditor {
   }
 
   private cardRow(card: Card): HTMLElement {
-    const save = () => void this.app.deps.repo.updateCard(card.id, { front: front.value, back: back.value });
-    const front = h('textarea', { class: 'field inline', rows: 1, value: card.front, 'aria-label': t.editor.front, onchange: save, dir: 'auto' });
-    const back = h('textarea', { class: 'field inline', rows: 1, value: card.back, 'aria-label': t.editor.back, onchange: save, dir: 'auto' });
+    const save = () =>
+      void this.app.deps.repo.updateCard(card.id, { front: front.value, back: back.value }).catch((error: unknown) => showError(error, t.errors.saveFailed));
+    const field = { class: 'field inline', rows: 1, onchange: save, dir: 'auto', maxLength: LIMITS.sideChars };
+    const front = h('textarea', { ...field, value: card.front, 'aria-label': t.editor.front });
+    const back = h('textarea', { ...field, value: card.back, 'aria-label': t.editor.back });
     const remove = async () => {
       await this.app.deps.repo.deleteCard(card.id);
       await this.refreshCards();

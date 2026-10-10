@@ -3,6 +3,8 @@
  * Interpolated strings are functions; keep sentences whole so translators can reorder them.
  */
 
+import { LIMITS } from './domain/types';
+
 const numberFormat = new Intl.NumberFormat('en');
 const pluralRules = new Intl.PluralRules('en');
 
@@ -97,8 +99,14 @@ export const t = {
     importText: 'CSV text',
     importFile: 'CSV file',
     import: 'Import',
-    importReady: (cards: number, skipped: number) =>
-      `${plural(cards, 'card')} ready${skipped ? `, ${plural(skipped, 'row')} skipped (missing front or back)` : ''}.`,
+    importReady: (cards: number, skipped: number, tooLong: number) =>
+      [
+        `${plural(cards, 'card')} ready`,
+        skipped && `${plural(skipped, 'row')} skipped (missing front or back)`,
+        tooLong && `${plural(tooLong, 'row')} skipped (over ${numberFormat.format(LIMITS.sideChars)} characters)`,
+      ]
+        .filter(Boolean)
+        .join(', ') + '.',
     imported: (count: number) => `Imported ${plural(count, 'card')} into box 1.`,
     cardCount: (count: number) => plural(count, 'card'),
     noCards: 'No cards yet.',
@@ -148,9 +156,16 @@ export const t = {
     delete: 'Delete',
   },
 
+  limits: {
+    sideChars: `Each side of a card can have up to ${numberFormat.format(LIMITS.sideChars)} characters.`,
+    cards: `You've reached the limit of ${numberFormat.format(LIMITS.cards)} cards. Delete some to add more.`,
+    decks: `You've reached the limit of ${numberFormat.format(LIMITS.decks)} decks.`,
+  },
+
   errors: {
     notBackup: 'Not a Lietner backup file.',
     backupTooNew: (version: number) => `Backup version ${version} is newer than this app supports.`,
     startFailed: 'Could not start: this browser may block IndexedDB or WebGL.',
+    saveFailed: 'Couldn’t save that change. Please try again.',
   },
 } as const;

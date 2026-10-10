@@ -101,7 +101,14 @@ export class ReviewSession {
     const card = this.current;
     if (!card) return;
     this.current = null;
-    const updated = await this.app.deps.repo.gradeCard(card, knew, today());
+    const updated = await this.app.deps.repo.gradeCard(card.id, knew, today());
+    if (!updated) {
+      // Deleted on another device mid-session: put it away without counting it.
+      this.index++;
+      this.app.deps.actor.hide();
+      await this.next();
+      return;
+    }
     this.app.replaceCard(updated);
     if (knew) this.stats.knew++;
     else this.stats.missed++;

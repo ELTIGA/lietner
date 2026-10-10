@@ -4,7 +4,7 @@ import { BOX_COUNT, MASTERED } from './types';
 /** Days until next review after landing in box n (index n - 1). */
 export const INTERVALS = [1, 2, 4, 8, 16] as const;
 
-export function newCard(draft: CardDraft, deckId: string, day: number, id: string = crypto.randomUUID()): Card {
+export function newCard(draft: CardDraft, deckId: string, day: number, id: string = crypto.randomUUID(), now = Date.now()): Card {
   return {
     id,
     deckId,
@@ -12,13 +12,16 @@ export function newCard(draft: CardDraft, deckId: string, day: number, id: strin
     back: draft.back.trim(),
     box: 1,
     dueDay: day,
-    createdAt: Date.now(),
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
+    dirty: 1,
     history: [],
   };
 }
 
 export function isDue(card: Card, day: number): boolean {
-  return card.box !== MASTERED && card.dueDay <= day;
+  return card.deletedAt === null && card.box !== MASTERED && card.dueDay <= day;
 }
 
 export function nextBox(box: Box, knew: boolean): Box {

@@ -13,6 +13,7 @@ import { promptDialog } from './dialog';
 import { anyDialogOpen, h, isTyping, kbd } from './dom';
 import { ReviewSession } from './review';
 import { SettingsDialog } from './settings';
+import { showError } from './toast';
 
 const META_LAST_DECK = 'lastDeck';
 const META_SPEED = 'speed';
@@ -78,13 +79,27 @@ export class App {
     await this.selectDeck(current);
   }
 
-  async createDeck(name: string, csv?: string): Promise<void> {
-    const deck = await this.deps.repo.createDeck(name);
-    if (csv) {
-      await this.deps.repo.addCards(deck.id, parseCards(csv).cards, today());
+  /** Creates and selects a deck; false if a limit (or storage) stopped it, after telling the user. */
+  async createDeck(name: string): Promise<boolean> {
+    try {
+      const deck = await this.deps.repo.createDeck(name);
+      this.decks = await this.deps.repo.listDecks();
+      await this.selectDeck(deck);
+      return true;
+    } catch (error) {
+      showError(error, t.errors.saveFailed);
+      return false;
     }
-    this.decks = await this.deps.repo.listDecks();
-    await this.selectDeck(deck);
+  }
+
+  async loadSample(): Promise<void> {
+    try {
+      const deck = await this.deps.repo.createSampleDeck(t.welcome.sampleDeckName, parseCards(this.deps.sampleCsv).cards, today());
+      this.decks = await this.deps.repo.listDecks();
+      await this.selectDeck(deck);
+    } catch (error) {
+      showError(error, t.errors.saveFailed);
+    }
   }
 
   async setSpeed(speed: AnimationSpeed): Promise<void> {
@@ -190,7 +205,7 @@ export class App {
     const name = h('input', { class: 'field', placeholder: t.welcome.deckNamePlaceholder, 'aria-label': t.welcome.deckNameLabel, maxLength: 80, dir: 'auto' });
     const create = (event: Event) => {
       event.preventDefault();
-      void this.createDeck(name.value || t.welcome.defaultDeckName).then(() => this.openEditor());
+      void this.createDeck(name.value || t.welcome.defaultDeckName).then((created) => created && this.openEditor());
     };
     return h(
       'section',
@@ -198,15 +213,14 @@ export class App {
       h('p', { class: 'eyebrow' }, t.welcome.eyebrow),
       h('h1', { class: 'home-status' }, t.welcome.title),
       h('form', { class: 'inline-form', onsubmit: create }, name, h('button', { class: 'btn primary', type: 'submit' }, t.welcome.create)),
-      h('button', { class: 'btn link', onclick: () => void this.createDeck(t.welcome.sampleDeckName, this.deps.sampleCsv) }, t.welcome.sample),
+      h('button', { class: 'btn link', onclick: () => void this.loadSample() }, t.welcome.sample),
     );
   }
 
   private async promptNewDeck(): Promise<void> {
     const name = await promptDialog({ title: t.newDeck.title, label: t.newDeck.label, maxLength: 80, confirmLabel: t.newDeck.create });
     if (name === null) return;
-    await this.createDeck(name || t.untitledDeck);
-    this.openEditor();
+    if (await this.createDeck(name || t.untitledDeck)) this.openEditor();
   }
 
   private readonly onKey = (event: KeyboardEvent): void => {
