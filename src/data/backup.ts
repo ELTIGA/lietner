@@ -1,5 +1,6 @@
 import type { Card, Deck } from '../domain/types';
 import { MASTERED } from '../domain/types';
+import { t } from '../strings';
 import type { Database } from './db';
 
 export const BACKUP_FORMAT = 'leitner-3d-backup';
@@ -20,8 +21,8 @@ export async function exportBackup(db: Database): Promise<Backup> {
 
 export function parseBackup(json: string): Backup {
   const value: unknown = JSON.parse(json);
-  if (!isBackup(value)) throw new Error('Not a Leitner 3D backup file.');
-  if (value.version > BACKUP_VERSION) throw new Error(`Backup version ${value.version} is newer than this app supports.`);
+  if (!isBackup(value)) throw new Error(t.errors.notBackup);
+  if (value.version > BACKUP_VERSION) throw new Error(t.errors.backupTooNew(value.version));
   return value;
 }
 

@@ -1,7 +1,17 @@
 {
-  "name": "leitner-3d",
+  "name": "lietner",
   "private": true,
   "version": "0.1.0",
+  "description": "Leitner-system flashcards on a 3D desk. Free, local-first, optional sync.",
+  "license": "MIT",
+  "homepage": "https://lietner.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ELTIGA/lietner.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ELTIGA/lietner/issues"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

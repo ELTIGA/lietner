@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+import { t } from '../strings';
+
 export const CARD_FONT = '"Fraunces", Georgia, serif';
 export const LABEL_FONT = '"IBM Plex Mono", ui-monospace, monospace';
 
@@ -62,7 +64,7 @@ export function drawCardFace(text: string, side: CardSide, boxLabel: string): TH
   ctx.font = `500 30px ${LABEL_FONT}`;
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  ctx.fillText(side === 'front' ? 'Q.' : 'A.', 52, 80);
+  ctx.fillText(side === 'front' ? t.card.question : t.card.answer, 52, 80);
   ctx.textAlign = 'right';
   ctx.fillText(boxLabel, CARD_W - 52, 80);
 

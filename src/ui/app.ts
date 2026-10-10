@@ -7,8 +7,10 @@ import type { Card, Deck } from '../domain/types';
 import { MASTERED } from '../domain/types';
 import type { AnimationSpeed, CardActor } from '../scene/cardActor';
 import type { Desk } from '../scene/desk';
+import { t } from '../strings';
 import { DeckEditor } from './deckEditor';
-import { h, isTyping, kbd, plural } from './dom';
+import { promptDialog } from './dialog';
+import { anyDialogOpen, h, isTyping, kbd } from './dom';
 import { ReviewSession } from './review';
 import { SettingsDialog } from './settings';
 
@@ -118,13 +120,23 @@ export class App {
     if (this.deck && !this.session) this.editor.open();
   }
 
+  /** Puts keyboard focus back on the desk after a drawer or dialog closes. */
+  focusHome(): void {
+    this.stage.querySelector<HTMLElement>('.btn.primary, .field')?.focus();
+  }
+
+  /** Makes everything behind the editor drawer inert while it is open. */
+  setBackgroundInert(inert: boolean): void {
+    for (const element of [this.topbar, this.stage, document.getElementById('scene')]) if (element) element.inert = inert;
+  }
+
   private renderTopbar(): void {
     const reviewing = !!this.session;
     const select = h(
       'select',
       {
         class: 'deck-select',
-        'aria-label': 'Deck',
+        'aria-label': t.topbar.deck,
         disabled: reviewing,
         onchange: (event: Event) => void this.selectDeck(this.decks.find((deck) => deck.id === (event.target as HTMLSelectElement).value) ?? null),
       },
@@ -132,14 +144,14 @@ export class App {
     );
 
     this.topbar.replaceChildren(
-      h('div', { class: 'brand' }, h('span', { class: 'brand-mark' }, 'L'), h('span', { class: 'brand-name' }, 'Leitner Desk')),
+      h('div', { class: 'brand' }, h('span', { class: 'brand-mark', 'aria-hidden': 'true' }, t.brandMark), h('span', { class: 'brand-name' }, t.appName)),
       this.decks.length ? select : h('span'),
       h(
         'div',
         { class: 'topbar-actions' },
-        !reviewing && this.deck && h('button', { class: 'btn ghost', onclick: () => this.openEditor() }, 'Edit deck', kbd('E')),
-        !reviewing && h('button', { class: 'btn ghost', onclick: () => void this.promptNewDeck() }, 'New deck'),
-        h('button', { class: 'btn icon', 'aria-label': 'Settings', title: 'Settings', onclick: () => this.settings.open() }, '⚙'),
+        !reviewing && this.deck && h('button', { class: 'btn ghost', onclick: () => this.openEditor() }, t.topbar.editDeck, kbd('E')),
+        !reviewing && h('button', { class: 'btn ghost', onclick: () => void this.promptNewDeck() }, t.topbar.newDeck),
+        h('button', { class: 'btn icon', 'aria-label': t.topbar.settings, title: t.topbar.settings, onclick: () => this.settings.open() }, '⚙'),
       ),
     );
   }
@@ -155,10 +167,10 @@ export class App {
     const nextDue = this.cards.filter((card) => card.box !== MASTERED).reduce((min, card) => Math.min(min, card.dueDay), Infinity);
 
     let status: string;
-    if (total === 0) status = 'This deck is empty. Add cards to start.';
-    else if (due > 0) status = `${plural(due, 'card')} due today`;
-    else if (Number.isFinite(nextDue)) status = `All caught up. Next review ${relativeDay(nextDue)}.`;
-    else status = 'Every card mastered.';
+    if (total === 0) status = t.home.empty;
+    else if (due > 0) status = t.home.due(due);
+    else if (Number.isFinite(nextDue)) status = t.home.caughtUp(relativeDay(nextDue));
+    else status = t.home.allMastered;
 
     this.stage.replaceChildren(
       h(
@@ -166,39 +178,39 @@ export class App {
         { class: 'home-panel', 'aria-live': 'polite' },
         h('p', { class: 'eyebrow' }, this.deck.name),
         h('h1', { class: 'home-status' }, status),
-        h('p', { class: 'home-meta' }, `${plural(total, 'card')} · ${counts[MASTERED]} mastered`),
+        h('p', { class: 'home-meta' }, t.home.meta(total, counts[MASTERED])),
         due > 0
-          ? h('button', { class: 'btn primary large', onclick: () => this.startReview() }, 'Start review', kbd('↵'))
-          : total === 0 && h('button', { class: 'btn primary large', onclick: () => this.openEditor() }, 'Add cards', kbd('E')),
+          ? h('button', { class: 'btn primary large', onclick: () => this.startReview() }, t.home.startReview, kbd('↵'))
+          : total === 0 && h('button', { class: 'btn primary large', onclick: () => this.openEditor() }, t.home.addCards, kbd('E')),
       ),
     );
   }
 
   private welcomePanel(): HTMLElement {
-    const name = h('input', { class: 'field', placeholder: 'Deck name, e.g. Spanish verbs', 'aria-label': 'Deck name', maxLength: 80 });
+    const name = h('input', { class: 'field', placeholder: t.welcome.deckNamePlaceholder, 'aria-label': t.welcome.deckNameLabel, maxLength: 80, dir: 'auto' });
     const create = (event: Event) => {
       event.preventDefault();
-      void this.createDeck(name.value || 'My first deck').then(() => this.openEditor());
+      void this.createDeck(name.value || t.welcome.defaultDeckName).then(() => this.openEditor());
     };
     return h(
       'section',
       { class: 'home-panel welcome' },
-      h('p', { class: 'eyebrow' }, 'Spaced repetition, on a desk'),
-      h('h1', { class: 'home-status' }, 'Five boxes. Cards climb when you know them, fall back when you don’t.'),
-      h('form', { class: 'inline-form', onsubmit: create }, name, h('button', { class: 'btn primary', type: 'submit' }, 'Create deck')),
-      h('button', { class: 'btn link', onclick: () => void this.createDeck('Spanish basics', this.deps.sampleCsv) }, 'or load a 25-card Spanish sample deck'),
+      h('p', { class: 'eyebrow' }, t.welcome.eyebrow),
+      h('h1', { class: 'home-status' }, t.welcome.title),
+      h('form', { class: 'inline-form', onsubmit: create }, name, h('button', { class: 'btn primary', type: 'submit' }, t.welcome.create)),
+      h('button', { class: 'btn link', onclick: () => void this.createDeck(t.welcome.sampleDeckName, this.deps.sampleCsv) }, t.welcome.sample),
     );
   }
 
   private async promptNewDeck(): Promise<void> {
-    const name = window.prompt('Name for the new deck');
+    const name = await promptDialog({ title: t.newDeck.title, label: t.newDeck.label, maxLength: 80, confirmLabel: t.newDeck.create });
     if (name === null) return;
-    await this.createDeck(name || 'Untitled deck');
+    await this.createDeck(name || t.untitledDeck);
     this.openEditor();
   }
 
   private readonly onKey = (event: KeyboardEvent): void => {
-    if (isTyping(event) || event.metaKey || event.ctrlKey || event.altKey) return;
+    if (isTyping(event) || event.metaKey || event.ctrlKey || event.altKey || anyDialogOpen()) return;
     if (this.session) {
       this.session.handleKey(event);
       return;
@@ -216,8 +228,8 @@ export class App {
 
 export function relativeDay(day: number): string {
   const diff = day - today();
-  if (diff <= 0) return 'today';
-  if (diff === 1) return 'tomorrow';
-  if (diff < 7) return `in ${diff} days`;
-  return `on ${dayToDate(day).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
+  if (diff <= 0) return t.day.today;
+  if (diff === 1) return t.day.tomorrow;
+  if (diff < 7) return t.day.inDays(diff);
+  return t.day.on(dayToDate(day).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
 }

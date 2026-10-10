@@ -3,17 +3,20 @@ import type { CsvResult } from '../data/csv';
 import { today } from '../domain/day';
 import type { Card } from '../domain/types';
 import { MASTERED } from '../domain/types';
+import { t } from '../strings';
 import type { App } from './app';
-import { h, plural } from './dom';
+import { confirmDialog } from './dialog';
+import { h } from './dom';
 
 /** Slide-in drawer for renaming a deck, adding/importing cards and editing the card list. */
 export class DeckEditor {
-  readonly element = h('aside', { class: 'drawer', 'aria-label': 'Deck editor', inert: true });
+  readonly element = h('aside', { class: 'drawer', 'aria-label': t.editor.label, inert: true });
   private pendingImport: CsvResult | null = null;
+  private opener: HTMLElement | null = null;
 
   constructor(private readonly app: App) {
     this.element.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') this.close();
+      if (event.key === 'Escape' && !event.defaultPrevented) this.close();
     });
   }
 
@@ -22,9 +25,12 @@ export class DeckEditor {
   }
 
   open(): void {
+    this.opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     this.render();
     this.element.inert = false;
     this.element.classList.add('open');
+    // Focus stays inside the drawer: everything behind it is inert until it closes.
+    this.app.setBackgroundInert(true);
     this.element.querySelector<HTMLTextAreaElement>('textarea')?.focus();
   }
 
@@ -32,8 +38,13 @@ export class DeckEditor {
     if (!this.isOpen) return;
     this.element.classList.remove('open');
     this.element.inert = true;
+    this.app.setBackgroundInert(false);
     this.pendingImport = null;
-    void this.app.reload();
+    void this.app.reload().then(() => {
+      // Re-rendering usually replaces the opener, so fall back to the home panel's main action.
+      if (this.opener?.isConnected) this.opener.focus();
+      else this.app.focusHome();
+    });
   }
 
   private render(): void {
@@ -43,7 +54,8 @@ export class DeckEditor {
     const name = h('input', {
       class: 'field title-field',
       value: deck.name,
-      'aria-label': 'Deck name',
+      'aria-label': t.editor.deckName,
+      dir: 'auto',
       maxLength: 80,
       onchange: () => void this.app.deps.repo.renameDeck(deck.id, name.value),
     });
@@ -53,15 +65,15 @@ export class DeckEditor {
         'div',
         { class: 'drawer-head' },
         name,
-        h('button', { class: 'btn icon', 'aria-label': 'Close editor', onclick: () => this.close() }, '✕'),
+        h('button', { class: 'btn icon', 'aria-label': t.editor.close, onclick: () => this.close() }, '✕'),
       ),
       h('div', { class: 'drawer-body' }, this.addForm(), this.importSection(), this.cardList(), this.dangerZone()),
     );
   }
 
   private addForm(): HTMLElement {
-    const front = h('textarea', { class: 'field', rows: 2, placeholder: 'Front (question)', 'aria-label': 'Front', required: true });
-    const back = h('textarea', { class: 'field', rows: 2, placeholder: 'Back (answer)', 'aria-label': 'Back', required: true });
+    const front = h('textarea', { class: 'field', rows: 2, placeholder: t.editor.frontPlaceholder, 'aria-label': t.editor.front, required: true, dir: 'auto' });
+    const back = h('textarea', { class: 'field', rows: 2, placeholder: t.editor.backPlaceholder, 'aria-label': t.editor.back, required: true, dir: 'auto' });
     const submit = async (event: Event) => {
       event.preventDefault();
       if (!front.value.trim() || !back.value.trim() || !this.app.deck) return;
@@ -74,10 +86,10 @@ export class DeckEditor {
     const form = h(
       'form',
       { class: 'card-form', onsubmit: submit },
-      h('h3', {}, 'Add a card'),
+      h('h3', {}, t.editor.addHeading),
       front,
       back,
-      h('button', { class: 'btn primary', type: 'submit' }, 'Add card', h('span', { class: 'keys' }, h('kbd', {}, '⌘'), h('kbd', {}, '↵'))),
+      h('button', { class: 'btn primary', type: 'submit' }, t.editor.addCard, h('span', { class: 'keys' }, h('kbd', {}, '⌘'), h('kbd', {}, '↵'))),
     );
     form.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) form.requestSubmit();
@@ -87,22 +99,20 @@ export class DeckEditor {
 
   private importSection(): HTMLElement {
     const preview = h('p', { class: 'import-preview', 'aria-live': 'polite' });
-    const paste = h('textarea', { class: 'field mono', rows: 3, placeholder: 'Paste CSV or tab-separated rows: front, back', 'aria-label': 'CSV text' });
-    const confirm = h('button', { class: 'btn primary', type: 'button', disabled: true }, 'Import');
+    const paste = h('textarea', { class: 'field mono', rows: 3, placeholder: t.editor.importPlaceholder, 'aria-label': t.editor.importText });
+    const confirm = h('button', { class: 'btn primary', type: 'button', disabled: true }, t.editor.import);
 
     const preparse = (text: string) => {
       this.pendingImport = text.trim() ? parseCards(text) : null;
       const result = this.pendingImport;
       confirm.disabled = !result?.cards.length;
-      preview.textContent = result
-        ? `${plural(result.cards.length, 'card')} ready${result.skipped ? `, ${plural(result.skipped, 'row')} skipped (missing front or back)` : ''}.`
-        : '';
+      preview.textContent = result ? t.editor.importReady(result.cards.length, result.skipped) : '';
     };
     const file = h('input', {
       type: 'file',
       accept: '.csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain',
       class: 'file-input',
-      'aria-label': 'CSV file',
+      'aria-label': t.editor.importFile,
       onchange: async () => {
         const chosen = file.files?.[0];
         if (!chosen) return;
@@ -119,14 +129,14 @@ export class DeckEditor {
       file.value = '';
       preparse('');
       await this.refreshCards();
-      preview.textContent = `Imported ${plural(count, 'card')} into box 1.`;
+      preview.textContent = t.editor.imported(count);
     });
 
     return h(
       'details',
       { class: 'import' },
-      h('summary', {}, 'Import CSV / Anki text export'),
-      h('p', { class: 'hint' }, 'Two columns, or a header row with front and back. Comma or tab separated.'),
+      h('summary', {}, t.editor.importSummary),
+      h('p', { class: 'hint' }, t.editor.importHint),
       file,
       paste,
       h('div', { class: 'row' }, preview, confirm),
@@ -138,15 +148,15 @@ export class DeckEditor {
     return h(
       'section',
       { class: 'card-list' },
-      h('h3', {}, plural(cards.length, 'card')),
-      cards.length ? h('ul', {}, ...cards.map((card) => this.cardRow(card))) : h('p', { class: 'hint' }, 'No cards yet.'),
+      h('h3', {}, t.editor.cardCount(cards.length)),
+      cards.length ? h('ul', {}, ...cards.map((card) => this.cardRow(card))) : h('p', { class: 'hint' }, t.editor.noCards),
     );
   }
 
   private cardRow(card: Card): HTMLElement {
     const save = () => void this.app.deps.repo.updateCard(card.id, { front: front.value, back: back.value });
-    const front = h('textarea', { class: 'field inline', rows: 1, value: card.front, 'aria-label': 'Front', onchange: save });
-    const back = h('textarea', { class: 'field inline', rows: 1, value: card.back, 'aria-label': 'Back', onchange: save });
+    const front = h('textarea', { class: 'field inline', rows: 1, value: card.front, 'aria-label': t.editor.front, onchange: save, dir: 'auto' });
+    const back = h('textarea', { class: 'field inline', rows: 1, value: card.back, 'aria-label': t.editor.back, onchange: save, dir: 'auto' });
     const remove = async () => {
       await this.app.deps.repo.deleteCard(card.id);
       await this.refreshCards();
@@ -154,21 +164,28 @@ export class DeckEditor {
     return h(
       'li',
       { class: 'card-row' },
-      h('span', { class: `box-badge b${card.box}`, title: card.box === MASTERED ? 'Mastered' : `Box ${card.box}` }, card.box === MASTERED ? '★' : String(card.box)),
+      h('span', { class: `box-badge b${card.box}`, title: card.box === MASTERED ? t.editor.mastered : t.editor.box(card.box) }, card.box === MASTERED ? '★' : String(card.box)),
       front,
       back,
-      h('button', { class: 'btn icon small', 'aria-label': `Delete card ${card.front}`, onclick: remove }, '✕'),
+      h('button', { class: 'btn icon small', 'aria-label': t.editor.deleteCard(card.front), onclick: remove }, '✕'),
     );
   }
 
   private dangerZone(): HTMLElement {
     const remove = async () => {
       const deck = this.app.deck;
-      if (!deck || !window.confirm(`Delete “${deck.name}” and all ${plural(this.app.cards.length, 'card')}? This cannot be undone.`)) return;
+      if (!deck) return;
+      const ok = await confirmDialog(t.editor.deleteDeckConfirm(deck.name, this.app.cards.length), {
+        title: t.editor.deleteDeckTitle,
+        confirmLabel: t.dialog.delete,
+        danger: true,
+      });
+      if (!ok) return;
       await this.app.deps.repo.deleteDeck(deck.id);
+      this.opener = null;
       this.close();
     };
-    return h('section', { class: 'danger' }, h('button', { class: 'btn danger-btn', onclick: remove }, 'Delete deck'));
+    return h('section', { class: 'danger' }, h('button', { class: 'btn danger-btn', onclick: remove }, t.editor.deleteDeck));
   }
 
   private async refreshCards(): Promise<void> {

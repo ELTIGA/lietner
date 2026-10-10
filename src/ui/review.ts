@@ -4,7 +4,8 @@ import type { Card } from '../domain/types';
 import { MASTERED } from '../domain/types';
 import type { App } from './app';
 import { relativeDay } from './app';
-import { h, kbd, plural } from './dom';
+import { t } from '../strings';
+import { h, kbd } from './dom';
 
 interface Stats {
   knew: number;
@@ -117,21 +118,21 @@ export class ReviewSession {
 
     const controls = this.revealed
       ? [
-          h('button', { class: 'btn miss large', onclick: () => void this.enqueue(() => this.grade(false)) }, 'Missed', kbd('F', '←')),
-          h('button', { class: 'btn know large', onclick: () => void this.enqueue(() => this.grade(true)) }, 'Knew it', kbd('J', '→')),
+          h('button', { class: 'btn miss large', onclick: () => void this.enqueue(() => this.grade(false)) }, t.review.missed, kbd('F', '←')),
+          h('button', { class: 'btn know large', onclick: () => void this.enqueue(() => this.grade(true)) }, t.review.knew, kbd('J', '→')),
         ]
-      : [h('button', { class: 'btn primary large', onclick: () => void this.enqueue(() => this.reveal()) }, 'Show answer', kbd('Space'))];
+      : [h('button', { class: 'btn primary large', onclick: () => void this.enqueue(() => this.reveal()) }, t.review.showAnswer, kbd('Space'))];
 
     this.hud.replaceChildren(
       h(
         'div',
         { class: 'review-top' },
-        h('span', { class: 'review-count' }, `${Math.min(this.index + 1, total)} / ${total}`),
+        h('span', { class: 'review-count' }, t.review.progress(Math.min(this.index + 1, total), total)),
         progress,
-        h('button', { class: 'btn ghost small', onclick: () => this.end() }, 'End', kbd('Esc')),
+        h('button', { class: 'btn ghost small', onclick: () => this.end() }, t.review.end, kbd('Esc')),
       ),
       h('div', { class: 'review-controls' }, ...controls),
-      h('p', { class: 'review-hint' }, 'Press any key mid-animation to skip it · ', kbd('S'), ' skips'),
+      h('p', { class: 'review-hint' }, t.review.hint, kbd('S'), t.review.hintSkip),
     );
   }
 
@@ -143,21 +144,21 @@ export class ReviewSession {
     const nextDay = upcoming.reduce((min, card) => Math.min(min, card.dueDay), Infinity);
     const nextCount = upcoming.filter((card) => card.dueDay === nextDay).length;
 
-    const done = h('button', { class: 'btn primary large', onclick: () => this.exit() }, 'Back to desk', kbd('↵'));
+    const done = h('button', { class: 'btn primary large', onclick: () => this.exit() }, t.review.backToDesk, kbd('↵'));
     this.hud.replaceChildren(
       h(
         'div',
         { class: 'summary' },
-        h('p', { class: 'eyebrow' }, 'Session complete'),
-        h('h2', {}, reviewed ? `${plural(reviewed, 'card')} reviewed` : 'Nothing reviewed'),
+        h('p', { class: 'eyebrow' }, t.review.complete),
+        h('h2', {}, t.review.reviewed(reviewed)),
         h(
           'dl',
           { class: 'summary-stats' },
-          stat('Knew', this.stats.knew, 'know'),
-          stat('Missed', this.stats.missed, 'miss'),
-          stat('Mastered', this.stats.mastered, 'star'),
+          stat(t.review.statKnew, this.stats.knew, 'know'),
+          stat(t.review.statMissed, this.stats.missed, 'miss'),
+          stat(t.review.statMastered, this.stats.mastered, 'star'),
         ),
-        Number.isFinite(nextDay) && h('p', { class: 'home-meta' }, `Next: ${plural(nextCount, 'card')} ${relativeDay(nextDay)}`),
+        Number.isFinite(nextDay) && h('p', { class: 'home-meta' }, t.review.next(nextCount, relativeDay(nextDay))),
         done,
       ),
     );

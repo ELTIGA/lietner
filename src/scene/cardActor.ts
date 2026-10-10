@@ -3,6 +3,7 @@ import * as THREE from 'three';
 
 import type { Box, Card } from '../domain/types';
 import { MASTERED } from '../domain/types';
+import { t } from '../strings';
 import type { Desk, Slot } from './desk';
 import { CARD_SIZE } from './desk';
 import { drawCardFace } from './textures';
@@ -144,7 +145,7 @@ export class CardActor {
   }
 
   private setFaces(card: Card): void {
-    const label = `BOX ${card.box}`;
+    const label = t.card.box(card.box);
     for (const [index, side] of [
       [4, 'front'],
       [5, 'back'],

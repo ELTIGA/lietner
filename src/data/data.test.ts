@@ -77,12 +77,12 @@ describe('backup', () => {
   });
 
   it('rejects foreign JSON', () => {
-    expect(() => parseBackup('{"hello":1}')).toThrow(/Not a Leitner/);
+    expect(() => parseBackup('{"hello":1}')).toThrow(/Not a Lietner backup/);
   });
 
   it('rejects cards with an impossible box', () => {
     const card = { id: 'c', deckId: 'd', front: 'f', back: 'b', box: 7, dueDay: 1 };
     const json = JSON.stringify({ format: 'leitner-3d-backup', version: 1, decks: [{ id: 'd', name: 'D' }], cards: [card] });
-    expect(() => parseBackup(json)).toThrow(/Not a Leitner/);
+    expect(() => parseBackup(json)).toThrow(/Not a Lietner backup/);
   });
 });

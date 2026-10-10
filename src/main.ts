@@ -7,6 +7,7 @@ import { setDayOffset } from './domain/day';
 import { CardActor } from './scene/cardActor';
 import { Desk } from './scene/desk';
 import { Stage } from './scene/stage';
+import { t } from './strings';
 import { loadFonts } from './scene/textures';
 import { App } from './ui/app';
 
@@ -45,5 +46,5 @@ async function boot(): Promise<void> {
 
 boot().catch((error: unknown) => {
   console.error('Failed to start', error);
-  document.getElementById('app')!.textContent = 'Could not start: this browser may block IndexedDB or WebGL.';
+  document.getElementById('app')!.textContent = t.errors.startFailed;
 });

@@ -1,5 +1,6 @@
 import { grade, newCard } from '../domain/leitner';
 import type { Card, CardDraft, Deck } from '../domain/types';
+import { t } from '../strings';
 import type { Database } from './db';
 
 export class Repo {
@@ -10,7 +11,7 @@ export class Repo {
   }
 
   async createDeck(name: string): Promise<Deck> {
-    const deck: Deck = { id: crypto.randomUUID(), name: name.trim() || 'Untitled deck', createdAt: Date.now() };
+    const deck: Deck = { id: crypto.randomUUID(), name: name.trim() || t.untitledDeck, createdAt: Date.now() };
     await this.db.put('decks', deck);
     return deck;
   }

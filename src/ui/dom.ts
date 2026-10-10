@@ -20,10 +20,6 @@ export function kbd(...keys: string[]): HTMLElement {
   return h('span', { class: 'keys', 'aria-hidden': 'true' }, ...keys.map((key) => h('kbd', {}, key)));
 }
 
-export function plural(count: number, word: string): string {
-  return `${count} ${word}${count === 1 ? '' : 's'}`;
-}
-
 export function downloadText(filename: string, text: string, type = 'application/json'): void {
   const url = URL.createObjectURL(new Blob([text], { type }));
   const link = h('a', { href: url, download: filename, hidden: true });
@@ -37,4 +33,9 @@ export function downloadText(filename: string, text: string, type = 'application
 export function isTyping(event: KeyboardEvent): boolean {
   const target = event.target as HTMLElement | null;
   return !!target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+}
+
+/** True while any modal <dialog> is open; global shortcuts stand down. */
+export function anyDialogOpen(): boolean {
+  return document.querySelector('dialog[open]') !== null;
 }
