@@ -10,4 +10,4 @@ labels: enhancement
 
 **Anything else**
 
-Please check "Out of scope for launch" in docs/intent/leitner.md first.
+Please check "Out of scope" in the [product scope](https://github.com/ELTIGA/lietner/blob/main/docs/scope.md) first.
