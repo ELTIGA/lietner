@@ -17,9 +17,12 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:db": "supabase test db",
+    "test:integration": "sh -c 'set -a; eval \"$(supabase status -o env)\"; set +a; vitest run src/sync/supabase.integration.test.ts'"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.3",
     "gsap": "^3.15.0",
     "idb": "^8.0.4",
     "papaparse": "^5.7.0",
@@ -29,6 +32,7 @@
     "@types/papaparse": "^5.5.2",
     "@types/three": "^0.186.0",
     "fake-indexeddb": "^6.2.5",
+    "supabase": "^2.120.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
     "vitest": "^5.0.3"
