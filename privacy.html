@@ -1,0 +1,154 @@
+<!doctype html>
+<!--
+  DRAFT for legal review. This text is a plain-language template prepared for the launch checklist,
+  not legal advice. Before launch: fill every highlighted [PLACEHOLDER], confirm the processor details
+  and transfer mechanisms, and have it reviewed by someone qualified in the operator's jurisdiction.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Privacy policy · Lietner</title>
+    <meta name="description" content="What Lietner stores, why, who processes it, and how to export or delete your data." />
+    <link rel="canonical" href="https://lietner.app/privacy" />
+    <meta name="theme-color" content="#15110e" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/logo.svg" sizes="any" type="image/svg+xml" />
+    <script type="module" src="/src/legal.ts"></script>
+  </head>
+  <body>
+    <main class="page">
+      <a class="back" href="/"><span aria-hidden="true">L</span>Lietner</a>
+      <h1>Privacy policy</h1>
+      <p class="updated">Last updated 10 October 2026</p>
+
+      <div class="summary">
+        <ul>
+          <li>Without an account, your decks and progress stay in your browser on your device. We never receive them.</li>
+          <li>With an account, we store your email address and your decks and cards so they can sync between your devices. Nothing is shared or public.</li>
+          <li>Your grade history never leaves your device.</li>
+          <li>No ads, no tracking cookies, no selling or sharing of your data.</li>
+          <li>You can export everything or delete your account at any time from Settings.</li>
+        </ul>
+      </div>
+
+      <h2>Who runs Lietner</h2>
+      <p>
+        Lietner (https://lietner.app) is run by <span class="placeholder">[OPERATOR NAME]</span>,
+        <span class="placeholder">[POSTAL ADDRESS, COUNTRY]</span> ("we"). We are the controller of the personal data described here.
+        Contact: <a href="mailto:hello@lietner.app">hello@lietner.app</a>.
+      </p>
+
+      <h2>Using Lietner without an account</h2>
+      <p>
+        Anyone can use every feature except sync as a guest. Your decks, cards, progress and settings are kept in your browser's storage
+        (IndexedDB) on your device and are not sent to us. If you clear your browser's site data, they are gone, so export a backup from
+        Settings now and then. The only things we receive from guests are aggregate page-view counts and crash reports, described below,
+        neither of which identifies you.
+      </p>
+
+      <h2>What we store if you create an account</h2>
+      <table>
+        <thead>
+          <tr><th scope="col">Data</th><th scope="col">Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Your email address. If you sign in with Google: your Google account ID, email address, name and profile picture link, as Google shares them.</td>
+            <td>To create your account and sign you in.</td>
+          </tr>
+          <tr>
+            <td>Your decks and cards: deck names, the front and back text of each card, which box it is in, when it is next due, and when it was created, changed or deleted.</td>
+            <td>To sync your decks and progress between your devices.</td>
+          </tr>
+          <tr>
+            <td>Sign-in records kept by our authentication provider: time of sign-in, IP address and browser type.</td>
+            <td>To keep accounts secure and prevent abuse.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        We do not store your grade history (the record of each "Knew it" or "Missed"), your animation speed or which deck you opened last:
+        those stay on each device. Cards are text only; we don't accept uploads.
+      </p>
+
+      <h2>Legal bases</h2>
+      <ul>
+        <li>Providing sync to account holders is necessary to perform our agreement with you (GDPR Article 6(1)(b)).</li>
+        <li>Security records, aggregate page views and crash reports are based on our legitimate interest in running a safe, working app (Article 6(1)(f)). You can object at any time by contacting us.</li>
+      </ul>
+
+      <h2>Page views and crash reports</h2>
+      <p>
+        <strong>Vercel Web Analytics</strong> counts page views in aggregate. It sets no cookies and does not follow you across sites.
+        <strong>Sentry</strong> receives a report when the app crashes: the error, the code that failed, and your browser and operating
+        system. IP address storage is turned off, session replay is off, and card text is removed before a report is sent.
+      </p>
+
+      <h2>Cookies and browser storage</h2>
+      <p>
+        Lietner uses no advertising or tracking cookies, so there is no cookie banner. It uses your browser's storage only for things the
+        app needs to work: your decks (IndexedDB), your sign-in session if you have an account (local storage), and a copy of the app so it
+        works offline (service worker cache).
+      </p>
+
+      <h2>Who processes your data for us</h2>
+      <table>
+        <thead>
+          <tr><th scope="col">Provider</th><th scope="col">What for</th><th scope="col">Where</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Supabase</td><td>Database and sign-in for accounts</td><td>EU (Frankfurt, Germany)</td></tr>
+          <tr><td>Vercel</td><td>Hosting the website, aggregate page views</td><td>Global network; US company</td></tr>
+          <tr><td>Resend</td><td>Sending sign-in code emails</td><td>US</td></tr>
+          <tr><td>Sentry</td><td>Crash reports</td><td>EU data region</td></tr>
+          <tr><td>Google</td><td>Only if you choose "Continue with Google"; Google's own privacy policy also applies</td><td>Global; US company</td></tr>
+        </tbody>
+      </table>
+      <p>
+        Each provider processes data only on our instructions. Where data is handled outside the EU/EEA, the transfer relies on
+        <span class="placeholder">[the EU-US Data Privacy Framework and/or Standard Contractual Clauses, to be confirmed per provider]</span>.
+        Guests' decks are never sent to any of them, and the Google sign-in script loads only when you open the sign-in screen.
+      </p>
+
+      <h2>What we never do</h2>
+      <p>No ads. We don't sell your data, share it for marketing, make it public, or use your cards to train AI models.</p>
+
+      <h2>How long we keep data</h2>
+      <ul>
+        <li>Account data is kept while your account exists.</li>
+        <li>When you delete a card or deck, its text is removed from our database right away. A small record (its ID and timestamps) stays so your other devices learn about the deletion, until you delete your account.</li>
+        <li>When you delete your account, your account and every deck and card in it are deleted from our database immediately. We do not keep server backups.</li>
+        <li>Sign-in records and crash reports are kept for a limited period (<span class="placeholder">[RETENTION PERIODS, e.g. Sentry 30 days]</span>), then deleted.</li>
+      </ul>
+
+      <h2>Your choices and rights</h2>
+      <ul>
+        <li><strong>Export:</strong> Settings → Export JSON downloads all your decks and cards.</li>
+        <li><strong>Delete:</strong> Settings → Delete account deletes your account and its data. Your other devices sign out at their next sync.</li>
+        <li>You can also ask us to access, correct, delete or hand over your data, or to restrict or stop processing, by emailing <a href="mailto:hello@lietner.app">hello@lietner.app</a>. We answer within one month.</li>
+        <li>You have the right to complain to a data protection authority, for example the one where you live.</li>
+      </ul>
+
+      <h2>Children</h2>
+      <p>
+        Accounts are for people aged 13 or older, or the minimum age for consenting to online services where you live if that is higher
+        (up to 16 in parts of the EU). Anyone may use Lietner as a guest, which sends us no personal data. If we learn that an account
+        belongs to someone below the required age, we delete it.
+      </p>
+
+      <h2>Security</h2>
+      <p>
+        Everything travels over HTTPS. The database only lets each account read and change its own rows. We keep as little data as the app
+        needs.
+      </p>
+
+      <h2>Changes</h2>
+      <p>If we change this policy, we update the date at the top. Significant changes are announced in the app before they apply.</p>
+
+      <h2>Contact</h2>
+      <p>Questions or requests: <a href="mailto:hello@lietner.app">hello@lietner.app</a>.</p>
+    </main>
+    <footer><a href="/">Lietner</a> · <a href="/terms">Terms</a> · <a href="https://github.com/ELTIGA/lietner">Source</a></footer>
+  </body>
+</html>

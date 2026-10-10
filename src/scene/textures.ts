@@ -41,17 +41,22 @@ const CARD_W = 1024;
 const CARD_H = 640;
 const PADDING = 88;
 
-/** Index-card face: ruled paper with the text fitted to the largest size that wraps cleanly. */
-export function drawCardFace(text: string, side: CardSide, boxLabel: string): THREE.CanvasTexture {
+const paperCache = new Map<CardSide, HTMLCanvasElement>();
+
+/**
+ * Blank ruled paper for one side, drawn once: the per-pixel grain is far too slow to redo for
+ * every card on a phone, so each card face starts as a copy of this.
+ */
+function blankPaper(side: CardSide): HTMLCanvasElement {
+  const cached = paperCache.get(side);
+  if (cached) return cached;
   const canvas = document.createElement('canvas');
   canvas.width = CARD_W;
   canvas.height = CARD_H;
   const ctx = canvas.getContext('2d')!;
-
   ctx.fillStyle = side === 'front' ? PAPER : '#efe4c9';
   ctx.fillRect(0, 0, CARD_W, CARD_H);
   paperNoise(ctx, CARD_W, CARD_H);
-
   if (side === 'front') {
     ctx.fillStyle = RULE_RED;
     ctx.fillRect(0, 112, CARD_W, 3);
@@ -62,6 +67,17 @@ export function drawCardFace(text: string, side: CardSide, boxLabel: string): TH
     ctx.lineWidth = 3;
     ctx.strokeRect(28, 28, CARD_W - 56, CARD_H - 56);
   }
+  paperCache.set(side, canvas);
+  return canvas;
+}
+
+/** Index-card face: ruled paper with the text fitted to the largest size that wraps cleanly. */
+export function drawCardFace(text: string, side: CardSide, boxLabel: string): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = CARD_W;
+  canvas.height = CARD_H;
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(blankPaper(side), 0, 0);
 
   ctx.fillStyle = 'rgba(42, 36, 32, 0.55)';
   ctx.font = `500 30px ${LABEL_FONT}`;

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lietner.app/sitemap.xml

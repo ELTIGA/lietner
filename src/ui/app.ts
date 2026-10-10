@@ -281,6 +281,7 @@ export class App {
         due > 0
           ? h('button', { class: 'btn primary large', onclick: () => this.startReview() }, t.home.startReview, kbd('↵'))
           : total === 0 && h('button', { class: 'btn primary large', onclick: () => this.openEditor() }, t.home.addCards, kbd('E')),
+        footerLinks(),
       ),
     );
   }
@@ -299,6 +300,7 @@ export class App {
       h('form', { class: 'inline-form', onsubmit: create }, name, h('button', { class: 'btn primary', type: 'submit' }, t.welcome.create)),
       h('button', { class: 'btn link', onclick: () => void this.loadSample() }, t.welcome.sample),
       !this.installHintDismissed && this.installHint(),
+      footerLinks(),
     );
   }
 
@@ -347,6 +349,17 @@ export class App {
       this.openEditor();
     }
   };
+}
+
+/** Privacy, terms and source, at the foot of the home panel. */
+function footerLinks(): HTMLElement {
+  return h(
+    'nav',
+    { class: 'panel-links', 'aria-label': t.footer.label },
+    h('a', { href: '/privacy' }, t.footer.privacy),
+    h('a', { href: '/terms' }, t.footer.terms),
+    h('a', { href: 'https://github.com/ELTIGA/lietner', target: '_blank', rel: 'noopener' }, t.footer.source),
+  );
 }
 
 export function relativeDay(day: number): string {

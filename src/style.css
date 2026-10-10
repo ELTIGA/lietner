@@ -768,6 +768,22 @@ kbd {
   margin: 0;
 }
 
+.panel-links {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  font-size: 13px;
+}
+
+.panel-links a {
+  color: var(--ink-soft);
+  text-underline-offset: 3px;
+}
+
+.panel-links a:hover {
+  color: var(--ink);
+}
+
 /* ---------- iOS install hint ---------- */
 .install-hint {
   margin-top: 18px;

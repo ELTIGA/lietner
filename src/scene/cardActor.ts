@@ -26,6 +26,8 @@ const ARC_HEIGHT = 1.4;
 /** Radians of tilt per world unit of horizontal drag. */
 const DRAG_TILT = 0.18;
 const Z_AXIS = new THREE.Vector3(0, 0, 1);
+/** The live card casts a shadow only below this height (world units above the desk). */
+const SHADOW_MAX_HEIGHT = 1.6;
 
 /**
  * The single live card being reviewed. A holder group carries position and orientation
@@ -228,6 +230,9 @@ export class CardActor implements CardView {
         onUpdate: () => {
           curve.getPoint(proxy.t, this.holder.position);
           this.holder.quaternion.slerpQuaternions(from.quaternion, to.quaternion, proxy.t);
+          // Near the desk the shadow grounds the card; up at the reading position the lamp
+          // would throw it as a large dark shape across the desk.
+          this.mesh.castShadow = this.holder.position.y < SHADOW_MAX_HEIGHT;
         },
       },
       position,

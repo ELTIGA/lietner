@@ -4,7 +4,7 @@
 
 **[lietner.app](https://lietner.app)**
 
-<!-- Demo GIF: docs/demo.gif (added before launch) -->
+![A card lifts out of box 1, flips to show its answer, and files itself into box 2](docs/demo.gif)
 
 Five boxes sit on a walnut desk. Each due card lifts out, flips to show the answer, and files itself into the next box, or back into box 1 if you missed it. The same desk works on phones, tablets and desktops. Sign in (optional) to sync decks and progress between your devices.
 
@@ -41,7 +41,7 @@ npm install
 npm run dev       # http://localhost:5173, guest mode
 npm test          # unit tests: scheduling, CSV, storage, backup, sync
 npm run build     # typecheck + static site in dist/
-npm run test:e2e  # Playwright: desktop Chrome, emulated iPhone and iPad
+npm run test:e2e  # Playwright: desktop Chrome, emulated iPhone and iPad, no-WebGL text mode
 ```
 
 ### Sync and sign-in locally
@@ -52,7 +52,8 @@ Sync uses [Supabase](https://supabase.com). The CLI runs a local stack in Docker
 npx supabase start    # first run downloads the Docker images
 npx supabase status   # shows the API URL and publishable key
 cp .env.example .env.local   # paste the URL and key, then restart npm run dev
-npx supabase test db  # row-level security and trigger tests
+npx supabase test db       # row-level security and trigger tests (pgTAP)
+npm run test:integration   # the sync engine against the local stack
 ```
 
 Email codes sent by the local stack appear in the local mail catcher at http://127.0.0.1:54324. Google sign-in needs a real OAuth client ID and only works on `localhost:5173` and production.
@@ -60,6 +61,10 @@ Email codes sent by the local stack appear in the local mail catcher at http://1
 Without any `VITE_SUPABASE_*` variables the app runs guest-only, which is also how preview deploys run.
 
 ### Dev helpers
+
+- `?mode=text` forces the text mode that browsers without WebGL get.
+- `npm run icons` regenerates the favicon and app icons from `public/logo.svg`.
+- `node scripts/capture-assets.mjs http://localhost:5173` (with `npm run dev` running) recaptures `public/og.png` and the demo frames; `python3 scripts/frames-to-gif.py` turns them into `docs/demo.gif`.
 
 - `?today=3` shifts the app clock forward 3 days (dev server only) to test schedules.
 - `window.__leitner` exposes the stage, desk, card actor and app in dev.

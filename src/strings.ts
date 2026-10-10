@@ -240,6 +240,13 @@ export const t = {
     installDismiss: 'Got it',
   },
 
+  footer: {
+    label: 'About Lietner',
+    privacy: 'Privacy',
+    terms: 'Terms',
+    source: 'Source',
+  },
+
   dialog: {
     cancel: 'Cancel',
     ok: 'OK',

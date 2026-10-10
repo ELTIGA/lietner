@@ -3,7 +3,11 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   // three.js alone is ~600 kB minified; one chunk is fine for a static app cached by the service worker.
-  build: { chunkSizeWarningLimit: 900 },
+  build: {
+    chunkSizeWarningLimit: 900,
+    // The legal pages are plain documents next to the app, served at /privacy and /terms.
+    rollupOptions: { input: { main: 'index.html', privacy: 'privacy.html', terms: 'terms.html' } },
+  },
   plugins: [
     VitePWA({
       // Updates wait for the user: the app shows a "new version" toast, never mid-review.
@@ -32,7 +36,7 @@ export default defineConfig({
         // Everything a guest needs offline, including the Latin font files. Other font subsets
         // and the sign-in SDK chunk are cached the first time they're used.
         globPatterns: ['**/*.{html,css,svg,png,ico}', 'assets/*.js', 'assets/*-latin-[0-9]*.woff2', 'assets/*-latin-ext-*.woff2'],
-        globIgnores: ['assets/session-*.js', 'assets/sentry-*.js'],
+        globIgnores: ['assets/session-*.js', 'assets/sentry-*.js', 'og.png'],
         navigateFallback: 'index.html',
         // The legal pages are their own documents, served from the precache by their clean URLs.
         navigateFallbackDenylist: [/^\/privacy/, /^\/terms/],
