@@ -1,3 +1,12 @@
+// Self-hosted fonts (no Google Fonts request); only the weights the UI and card faces use.
+import '@fontsource/fraunces/400.css';
+import '@fontsource/fraunces/600.css';
+import '@fontsource/fraunces/700.css';
+import '@fontsource/ibm-plex-sans/400.css';
+import '@fontsource/ibm-plex-sans/500.css';
+import '@fontsource/ibm-plex-sans/600.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
 import './style.css';
 
 import sampleCsv from '../samples/spanish.csv?raw';
@@ -13,6 +22,7 @@ import type { CardView, DeskView } from './scene/views';
 import { t } from './strings';
 import { App } from './ui/app';
 import { isTyping } from './ui/dom';
+import { setupServiceWorker } from './ui/pwa';
 import { TextCard, TextDesk } from './ui/textDesk';
 
 interface Scene {
@@ -104,6 +114,7 @@ async function boot(): Promise<void> {
   const { desk, actor, debug } = (!forceText && startWebGl(host)) || startTextMode(host);
   const app = new App(document.getElementById('app')!, { db, repo: new Repo(db), desk, actor, scene: host, sampleCsv });
   await app.start();
+  setupServiceWorker(app);
   if (import.meta.env.DEV) Object.assign(window, { __leitner: { ...debug, app } });
 }
 

@@ -768,6 +768,26 @@ kbd {
   margin: 0;
 }
 
+/* ---------- iOS install hint ---------- */
+.install-hint {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(184, 64, 43, 0.35);
+  border-radius: var(--radius);
+  background: #fbf3e2;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.install-hint p {
+  margin: 0 0 10px;
+}
+
+.install-hint .install-title {
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
 /* ---------- Account and sync ---------- */
 .sync-chip {
   display: inline-flex;

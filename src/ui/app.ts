@@ -14,10 +14,13 @@ import { anyDialogOpen, h, isTyping, kbd } from './dom';
 import { attachSwipe } from './gestures';
 import { ReviewSession } from './review';
 import { SettingsDialog } from './settings';
+import { isIosSafari } from './pwa';
 import { showError } from './toast';
 
 const META_LAST_DECK = 'lastDeck';
 const META_SPEED = 'speed';
+/** Kept across sign-out (see data/wipe.ts). */
+const META_INSTALL_HINT = 'installHintDismissed';
 
 export interface AppDeps {
   db: Database;
@@ -44,6 +47,8 @@ export class App {
   private session: ReviewSession | null = null;
   /** Sync pulled changes while a review or the editor was open; redraw when it closes. */
   private reloadPending = false;
+  private installHintDismissed = true;
+  private readonly reviewListeners = new Set<(reviewing: boolean) => void>();
   readonly account: Account;
 
   constructor(
@@ -69,9 +74,22 @@ export class App {
     this.deps.actor.setSpeed(this.speed);
     this.decks = await this.deps.repo.listDecks();
     const lastId = await this.deps.repo.getMeta<string>(META_LAST_DECK);
+    this.installHintDismissed = !isIosSafari() || !!(await this.deps.repo.getMeta<boolean>(META_INSTALL_HINT));
     await this.selectDeck(this.decks.find((deck) => deck.id === lastId) ?? this.decks[0] ?? null);
     // Local data is on screen; the account (and its network) comes second.
     void this.account.restore();
+  }
+
+  get reviewing(): boolean {
+    return !!this.session;
+  }
+
+  onReviewChange(listener: (reviewing: boolean) => void): void {
+    this.reviewListeners.add(listener);
+  }
+
+  private notifyReview(reviewing: boolean): void {
+    for (const listener of this.reviewListeners) listener(reviewing);
   }
 
   get dueCount(): number {
@@ -148,8 +166,10 @@ export class App {
       this.session = null;
       if (this.reloadPending) void this.reload();
       else this.refresh();
+      this.notifyReview(false);
     });
     this.renderTopbar();
+    this.notifyReview(true);
     void this.session.start();
   }
 
@@ -278,7 +298,32 @@ export class App {
       h('h1', { class: 'home-status' }, t.welcome.title),
       h('form', { class: 'inline-form', onsubmit: create }, name, h('button', { class: 'btn primary', type: 'submit' }, t.welcome.create)),
       h('button', { class: 'btn link', onclick: () => void this.loadSample() }, t.welcome.sample),
+      !this.installHintDismissed && this.installHint(),
     );
+  }
+
+  /** iOS Safari evicts site data after a week without a visit; the home-screen app doesn't. */
+  private installHint(): HTMLElement {
+    const hint = h(
+      'aside',
+      { class: 'install-hint' },
+      h('p', { class: 'install-title' }, t.pwa.installTitle),
+      h('p', {}, t.pwa.installBody),
+      h(
+        'button',
+        {
+          class: 'btn small',
+          type: 'button',
+          onclick: () => {
+            this.installHintDismissed = true;
+            hint.remove();
+            void this.deps.repo.setMeta(META_INSTALL_HINT, true);
+          },
+        },
+        t.pwa.installDismiss,
+      ),
+    );
+    return hint;
   }
 
   private async promptNewDeck(): Promise<void> {

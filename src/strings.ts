@@ -231,6 +231,15 @@ export const t = {
     refused: (count: number) => `${plural(count, 'change')} couldn’t sync: an account limit was reached`,
   },
 
+  pwa: {
+    updateReady: 'A new version of Lietner is ready.',
+    reload: 'Reload',
+    installTitle: 'Keep your cards safe on iPhone and iPad',
+    installBody:
+      'Safari can clear a website’s data when you haven’t visited for a week. Add Lietner to your Home Screen to keep your cards: tap Share, then Add to Home Screen.',
+    installDismiss: 'Got it',
+  },
+
   dialog: {
     cancel: 'Cancel',
     ok: 'OK',

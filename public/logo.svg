@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>Lietner</title>
+  <rect width="512" height="512" fill="#15110e"/>
+  <g transform="rotate(-4 256 256)">
+    <rect x="96" y="96" width="320" height="320" rx="28" fill="#b8402b"/>
+    <path fill="#fff6ea" d="M168 140H300V160Q274 162 272 186V344H330Q356 342 362 302H384L376 380H168V360Q194 358 196 334V186Q194 162 168 160Z"/>
+  </g>
+</svg>
