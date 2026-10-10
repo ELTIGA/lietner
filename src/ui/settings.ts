@@ -1,5 +1,5 @@
 import { exportBackup, importBackup, parseBackup } from '../data/backup';
-import type { AnimationSpeed } from '../scene/cardActor';
+import type { AnimationSpeed } from '../scene/views';
 import { t } from '../strings';
 import type { App } from './app';
 import { confirmDialog } from './dialog';
@@ -112,6 +112,7 @@ export class SettingsDialog {
               [['F', '←'], t.settings.shortcuts.missed],
               [['S'], t.settings.shortcuts.skip],
               [['E'], t.settings.shortcuts.edit],
+              [['Z'], t.settings.shortcuts.undo],
               [['Esc'], t.settings.shortcuts.escape],
             ] as const
           ).flatMap(([keys, label]) => [h('dt', {}, kbd(...keys)), h('dd', {}, label)]),

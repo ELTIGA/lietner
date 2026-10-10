@@ -43,6 +43,13 @@ body {
   display: block;
 }
 
+/* Taps and swipes on the card are handled in script; don't let the browser pan or zoom. */
+#scene {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 /* Vignette for the lamp-lit room feel. */
 #scene::after {
   content: '';
@@ -69,7 +76,7 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 16px 24px;
+  padding: max(16px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) 16px max(24px, env(safe-area-inset-left));
   background: linear-gradient(to bottom, rgba(21, 17, 14, 0.85), transparent);
 }
 
@@ -256,9 +263,9 @@ kbd {
   padding: 1px 5px;
   border-radius: 3px;
   border: 1px solid currentColor;
+  border-color: color-mix(in srgb, currentColor 55%, transparent);
   font: 500 11px/16px var(--font-mono);
   text-align: center;
-  opacity: 0.7;
 }
 
 /* ---------- Home panel (a paper index card pinned to the lower left) ---------- */
@@ -412,7 +419,7 @@ kbd {
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding: 0 24px 28px;
+  padding: 0 max(24px, env(safe-area-inset-right)) max(28px, calc(env(safe-area-inset-bottom) + 12px)) max(24px, env(safe-area-inset-left));
 }
 
 .review-top {
@@ -461,7 +468,8 @@ kbd {
 .review-hint {
   margin: 0;
   font-size: 12px;
-  color: rgba(244, 236, 216, 0.45);
+  color: rgba(244, 236, 216, 0.85);
+  text-shadow: 0 1px 3px rgba(8, 5, 3, 0.9);
 }
 
 .summary {
@@ -758,6 +766,397 @@ kbd {
 .shortcuts dt,
 .shortcuts dd {
   margin: 0;
+}
+
+/* ---------- Utilities ---------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.narrow-only {
+  display: none !important;
+}
+
+/* Touch-only devices: keyboard hints come back after the first physical key press. */
+html.touch-only .keys,
+html.touch-only .review-hint {
+  display: none;
+}
+
+/* ---------- Topbar menu (narrow screens) ---------- */
+.menu {
+  position: fixed;
+  inset: auto;
+  top: calc(max(16px, env(safe-area-inset-top)) + 48px);
+  right: max(12px, env(safe-area-inset-right));
+  margin: 0;
+  min-width: 200px;
+  padding: 6px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: 500 16px var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--paper-2);
+  outline: none;
+}
+
+/* ---------- Toasts ---------- */
+.toasts {
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, calc(env(safe-area-inset-bottom) + 8px));
+  z-index: 20;
+  display: grid;
+  gap: 8px;
+  width: min(420px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* Keep toasts clear of the grading buttons during a review. */
+body:has(.review-hud .review-controls) .toasts {
+  bottom: max(150px, calc(env(safe-area-inset-bottom) + 142px));
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+  border: 1px solid rgba(244, 236, 216, 0.16);
+  border-radius: var(--radius);
+  background: #2a231d;
+  color: var(--paper);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+  animation: toast-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast.error {
+  border-color: rgba(214, 92, 70, 0.7);
+}
+
+.toast-message {
+  flex: 1;
+  padding: 6px 0;
+}
+
+.toast.leaving {
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* ---------- Swipe feedback ---------- */
+.swipe-edge {
+  position: fixed;
+  top: 50%;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-weight: 600;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.swipe-edge.knew {
+  right: max(12px, env(safe-area-inset-right));
+  background: var(--know);
+  color: #f1f7ee;
+  opacity: clamp(0, var(--swipe, 0), 1);
+}
+
+.swipe-edge.missed {
+  left: max(12px, env(safe-area-inset-left));
+  background: var(--paper);
+  color: var(--miss);
+  opacity: clamp(0, calc(var(--swipe, 0) * -1), 1);
+}
+
+/* ---------- Text mode (no WebGL) ---------- */
+.text-mode #scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  padding: calc(max(16px, env(safe-area-inset-top)) + 72px) 16px 0;
+}
+
+.text-desk {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.text-box {
+  display: grid;
+  gap: 2px;
+  width: 64px;
+  padding: 8px 6px;
+  border-radius: 4px;
+  background: #7a4f2e;
+  color: var(--paper);
+  font: 500 13px var(--font-mono);
+  text-align: center;
+}
+
+.text-box.b6 {
+  background: #3d2b1e;
+  color: var(--brass);
+}
+
+.text-box-label {
+  font: 700 20px var(--font-display);
+}
+
+.text-card {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(520px, 90vw);
+  aspect-ratio: 13 / 8;
+  padding: 40px 28px 24px;
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  text-align: center;
+  will-change: transform;
+}
+
+.text-card[hidden] {
+  display: none;
+}
+
+.text-card.back {
+  background: #efe4c9;
+}
+
+.text-card-label {
+  position: absolute;
+  top: 14px;
+  left: 18px;
+  font: 500 12px var(--font-mono);
+  color: var(--ink-soft);
+}
+
+.text-card-text {
+  margin: 0;
+  font: 600 clamp(20px, 5vw, 34px) / 1.25 var(--font-display);
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+/* ---------- Touch screens ---------- */
+@media (pointer: coarse) {
+  .btn {
+    min-height: 48px;
+  }
+
+  .btn.icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .btn.icon.small {
+    width: 44px;
+    height: 44px;
+  }
+
+  .review-controls .btn {
+    min-height: 56px;
+  }
+
+  /* Below 16px, iOS zooms the page when a field gets focus. */
+  .field,
+  .field.mono,
+  .deck-select {
+    font-size: 16px;
+  }
+
+  .segmented span {
+    padding: 13px 18px;
+  }
+}
+
+/* ---------- Narrow screens (phones) ---------- */
+@media (max-width: 639px) {
+  .wide-only {
+    display: none !important;
+  }
+
+  .narrow-only {
+    display: inline-flex !important;
+  }
+
+  .topbar {
+    gap: 10px;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(8px, env(safe-area-inset-right));
+  }
+
+  .brand {
+    margin-right: 0;
+  }
+
+  .brand-name {
+    display: none;
+  }
+
+  .deck-select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .topbar-actions {
+    margin-left: 0;
+  }
+
+  .home-panel {
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px));
+    width: auto;
+    padding: 20px 20px 18px;
+  }
+
+  .home-status {
+    font-size: 23px;
+  }
+
+  .welcome .home-status {
+    font-size: 21px;
+  }
+
+  .inline-form {
+    flex-direction: column;
+  }
+
+  .home-panel .btn.large {
+    width: 100%;
+  }
+
+  .review-top {
+    top: calc(max(16px, env(safe-area-inset-top)) + 60px);
+    width: calc(100% - 24px);
+  }
+
+  .text-mode #scene {
+    gap: 24px;
+    padding-top: calc(max(16px, env(safe-area-inset-top)) + 128px);
+  }
+
+  .text-box {
+    width: 48px;
+    padding: 6px 4px;
+  }
+
+  .text-desk {
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .progress {
+    flex: 1;
+    width: auto;
+  }
+
+  .review-hud {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+
+  /* Thumb zone: grading buttons span the bottom of the screen. */
+  .review-controls {
+    width: 100%;
+  }
+
+  .review-controls .btn {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* ---------- Editor as a full-screen sheet on phones ---------- */
+@media (max-width: 600px) {
+  .drawer {
+    left: 0;
+    width: 100vw;
+    height: 100dvh;
+    bottom: auto;
+    padding-top: env(safe-area-inset-top);
+    transform: translateY(105%);
+  }
+
+  .drawer.open {
+    transform: none;
+  }
+
+  .drawer-head {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(8px, env(safe-area-inset-right));
+  }
+
+  .drawer-body {
+    padding: 8px max(16px, env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom) + var(--kb-inset, 0px)) max(16px, env(safe-area-inset-left));
+  }
+
+  .card-row {
+    grid-template-columns: 26px 1fr 44px;
+  }
+
+  .card-row > :nth-child(1) {
+    grid-area: 1 / 1 / 3 / 2;
+  }
+
+  .card-row > :nth-child(2) {
+    grid-area: 1 / 2;
+  }
+
+  .card-row > :nth-child(3) {
+    grid-area: 2 / 2;
+  }
+
+  .card-row > :nth-child(4) {
+    grid-area: 1 / 3;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

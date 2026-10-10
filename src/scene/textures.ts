@@ -1,8 +1,11 @@
 import * as THREE from 'three';
 
 import { t } from '../strings';
+import { isRtl, wrapText } from './wrap';
 
-export const CARD_FONT = '"Fraunces", Georgia, serif';
+/** Fraunces first; the rest cover scripts it lacks (Arabic, Hebrew, CJK, Thai) on common systems. */
+export const CARD_FONT =
+  '"Fraunces", "Noto Serif", "Noto Naskh Arabic", "Noto Serif Hebrew", "Noto Serif CJK SC", "Noto Serif Thai", "Hiragino Mincho ProN", "Songti SC", "Times New Roman", Georgia, serif';
 export const LABEL_FONT = '"IBM Plex Mono", ui-monospace, monospace';
 
 const PAPER = '#f4ecd8';
@@ -76,9 +79,10 @@ export function drawCardFace(text: string, side: CardSide, boxLabel: string): TH
 function fitText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, width: number, height: number): void {
   let size = 104;
   let lines: string[] = [];
+  const measure = (line: string) => ctx.measureText(line).width;
   for (; size >= 26; size -= 4) {
     ctx.font = `600 ${size}px ${CARD_FONT}`;
-    lines = wrap(ctx, text, width);
+    lines = wrapText(text, width, measure);
     const fitsWidth = lines.every((line) => ctx.measureText(line).width <= width);
     if (fitsWidth && lines.length * size * 1.25 <= height) break;
   }
@@ -87,24 +91,9 @@ function fitText(ctx: CanvasRenderingContext2D, text: string, x: number, y: numb
   ctx.fillStyle = INK;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  // Bidi ordering inside each line follows the card's own direction (Arabic, Hebrew).
+  ctx.direction = isRtl(text) ? 'rtl' : 'ltr';
   lines.forEach((line, index) => ctx.fillText(line, x + width / 2, blockTop + lineHeight * (index + 0.5)));
-}
-
-function wrap(ctx: CanvasRenderingContext2D, text: string, width: number): string[] {
-  const lines: string[] = [];
-  for (const paragraph of text.split(/\n/)) {
-    let line = '';
-    for (const word of paragraph.split(/\s+/).filter(Boolean)) {
-      const candidate = line ? `${line} ${word}` : word;
-      if (ctx.measureText(candidate).width <= width || !line) line = candidate;
-      else {
-        lines.push(line);
-        line = word;
-      }
-    }
-    lines.push(line);
-  }
-  return lines;
 }
 
 function paperNoise(ctx: CanvasRenderingContext2D, width: number, height: number): void {

@@ -5,12 +5,12 @@ import { dayToDate, today } from '../domain/day';
 import { boxCounts, isDue } from '../domain/leitner';
 import type { Card, Deck } from '../domain/types';
 import { MASTERED } from '../domain/types';
-import type { AnimationSpeed, CardActor } from '../scene/cardActor';
-import type { Desk } from '../scene/desk';
+import type { AnimationSpeed, CardView, DeskView } from '../scene/views';
 import { t } from '../strings';
 import { DeckEditor } from './deckEditor';
 import { promptDialog } from './dialog';
 import { anyDialogOpen, h, isTyping, kbd } from './dom';
+import { attachSwipe } from './gestures';
 import { ReviewSession } from './review';
 import { SettingsDialog } from './settings';
 import { showError } from './toast';
@@ -21,8 +21,10 @@ const META_SPEED = 'speed';
 export interface AppDeps {
   db: Database;
   repo: Repo;
-  desk: Desk;
-  actor: CardActor;
+  desk: DeskView;
+  actor: CardView;
+  /** Full-screen layer behind the UI where taps and swipes on the card land. */
+  scene: HTMLElement;
   sampleCsv: string;
 }
 
@@ -49,6 +51,7 @@ export class App {
     this.root.append(this.topbar, this.stage, this.editor.element, this.settings.element);
     host.append(this.root);
     window.addEventListener('keydown', this.onKey);
+    attachSwipe(deps.scene, () => (this.session?.active ? this.session : null));
   }
 
   async start(): Promise<void> {
@@ -158,15 +161,37 @@ export class App {
       ...this.decks.map((deck) => h('option', { value: deck.id, selected: deck.id === this.deck?.id }, deck.name)),
     );
 
+    const actions: Array<[string, () => void, HTMLElement?]> = [];
+    if (!reviewing && this.deck) actions.push([t.topbar.editDeck, () => this.openEditor(), kbd('E')]);
+    if (!reviewing) actions.push([t.topbar.newDeck, () => void this.promptNewDeck()]);
+
+    // Narrow screens fold the actions into a menu; wide screens show them inline.
+    const menu = h('div', { class: 'menu', id: 'topbar-menu', popover: 'auto' });
+    const menuItem = (label: string, run: () => void) =>
+      h(
+        'button',
+        {
+          class: 'menu-item',
+          type: 'button',
+          onclick: () => {
+            menu.hidePopover();
+            run();
+          },
+        },
+        label,
+      );
+    menu.append(...actions.map(([label, run]) => menuItem(label, run)), menuItem(t.topbar.settings, () => this.settings.open()));
+
     this.topbar.replaceChildren(
       h('div', { class: 'brand' }, h('span', { class: 'brand-mark', 'aria-hidden': 'true' }, t.brandMark), h('span', { class: 'brand-name' }, t.appName)),
       this.decks.length ? select : h('span'),
       h(
         'div',
         { class: 'topbar-actions' },
-        !reviewing && this.deck && h('button', { class: 'btn ghost', onclick: () => this.openEditor() }, t.topbar.editDeck, kbd('E')),
-        !reviewing && h('button', { class: 'btn ghost', onclick: () => void this.promptNewDeck() }, t.topbar.newDeck),
-        h('button', { class: 'btn icon', 'aria-label': t.topbar.settings, title: t.topbar.settings, onclick: () => this.settings.open() }, '⚙'),
+        ...actions.map(([label, run, keys]) => h('button', { class: 'btn ghost wide-only', onclick: run }, label, keys)),
+        h('button', { class: 'btn icon wide-only', 'aria-label': t.topbar.settings, title: t.topbar.settings, onclick: () => this.settings.open() }, '⚙'),
+        h('button', { class: 'btn icon narrow-only', 'aria-label': t.topbar.menu, title: t.topbar.menu, popovertarget: 'topbar-menu' }, '⋯'),
+        menu,
       ),
     );
   }

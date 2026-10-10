@@ -113,6 +113,11 @@ export class Repo {
     return cards.filter(isLive).sort((a, b) => a.createdAt - b.createdAt);
   }
 
+  async getCard(id: string): Promise<Card | null> {
+    const card = await this.db.get('cards', id);
+    return isLive(card) ? card : null;
+  }
+
   async countCards(): Promise<number> {
     const cards = await this.db.getAll('cards');
     return cards.filter(isLive).length;

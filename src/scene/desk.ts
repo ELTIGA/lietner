@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import type { Box } from '../domain/types';
 import { MASTERED } from '../domain/types';
 import { canvasTexture, drawBoxLabel, woodTexture } from './textures';
+import type { DeskView, LayoutMode } from './views';
 
 export const CARD_SIZE = { width: 1.3, height: 0.8, depth: 0.012 } as const;
 
@@ -12,6 +13,8 @@ const MAX_VISIBLE = 40;
 const CARD_TILT = -0.22;
 const TRAY_CARD_STEP = 0.014;
 const BOX_Z = -0.3;
+/** Portrait: two rows (1-2-3 at the back, 4-5-★ in front). */
+const PORTRAIT_ROWS_Z = [-1.15, 0.45] as const;
 
 export interface Slot {
   position: THREE.Vector3;
@@ -29,8 +32,10 @@ interface BoxView {
 }
 
 /** The desk, five Leitner boxes, the mastered tray, and the card stacks inside them. */
-export class Desk {
+export class Desk implements DeskView {
   readonly root = new THREE.Group();
+  /** Asks the stage for a redraw (label textures and stacks changed). */
+  onInvalidate: () => void = () => {};
   private readonly views = new Map<Box, BoxView>();
   private readonly cardGeometry = new THREE.BoxGeometry(CARD_SIZE.width, CARD_SIZE.height, CARD_SIZE.depth);
   private readonly stackMaterial = new THREE.MeshStandardMaterial({ color: '#efe5cc', roughness: 0.9 });
@@ -56,6 +61,13 @@ export class Desk {
     view.stack.count = Math.min(view.count, MAX_VISIBLE);
     drawBoxLabel(view.labelCanvas, box === MASTERED ? '★' : String(box), view.count);
     view.labelTexture.needsUpdate = true;
+    this.onInvalidate();
+  }
+
+  setLayout(mode: LayoutMode): void {
+    for (const view of this.views.values()) view.group.position.copy(boxPosition(view.box, mode));
+    this.root.updateMatrixWorld(true);
+    this.onInvalidate();
   }
 
   count(box: Box): number {
@@ -86,17 +98,17 @@ export class Desk {
 
   private buildDesk(): THREE.Object3D {
     const top = new THREE.Mesh(
-      new THREE.BoxGeometry(14, 0.3, 10),
+      new THREE.BoxGeometry(14, 0.3, 16),
       new THREE.MeshStandardMaterial({ map: woodTexture(), roughness: 0.55, metalness: 0.05 }),
     );
-    top.position.set(0, -0.15, -1.2);
+    top.position.set(0, -0.15, 1.8);
     top.receiveShadow = true;
     return top;
   }
 
   private buildBox(box: Box): void {
     const group = new THREE.Group();
-    group.position.set((box - (MASTERED + 1) / 2) * SPACING, 0, BOX_Z);
+    group.position.copy(boxPosition(box, 'landscape'));
     group.userData.box = box;
     const material = new THREE.MeshStandardMaterial({ color: box === MASTERED ? '#3d2b1e' : '#7a4f2e', roughness: 0.7 });
     const tray = box === MASTERED;
@@ -154,6 +166,12 @@ export class Desk {
     this.views.set(box, { box, group, stack, labelCanvas, labelTexture, material, count: 0 });
     this.setCount(box, 0);
   }
+}
+
+function boxPosition(box: Box, mode: LayoutMode): THREE.Vector3 {
+  if (mode === 'landscape') return new THREE.Vector3((box - (MASTERED + 1) / 2) * SPACING, 0, BOX_Z);
+  const index = box - 1;
+  return new THREE.Vector3(((index % 3) - 1) * SPACING, 0, PORTRAIT_ROWS_Z[index < 3 ? 0 : 1]);
 }
 
 /** Local transform of stack card `index`: upright and filed back-to-front in boxes, flat and piled in the tray. */

@@ -22,6 +22,7 @@ export const t = {
     editDeck: 'Edit deck',
     newDeck: 'New deck',
     settings: 'Settings',
+    menu: 'Menu',
   },
 
   home: {
@@ -75,6 +76,10 @@ export const t = {
     statMastered: 'Mastered',
     next: (count: number, when: string) => `Next: ${plural(count, 'card')} ${when}`,
     backToDesk: 'Back to desk',
+    undo: 'Undo',
+    graded: (box: number) => (box === 6 ? 'Mastered ★' : box === 1 ? 'Back to box 1' : `Moved to box ${box}`),
+    questionText: (front: string) => `Question: ${front}`,
+    answerText: (back: string) => `Answer: ${back}`,
   },
 
   card: {
@@ -145,6 +150,7 @@ export const t = {
       missed: 'Missed',
       skip: 'Skip animation',
       edit: 'Edit deck',
+      undo: 'Undo last grade',
       escape: 'End session / close',
     },
     backupFilename: (date: string) => `lietner-backup-${date}.json`,

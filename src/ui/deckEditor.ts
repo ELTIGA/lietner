@@ -19,7 +19,20 @@ export class DeckEditor {
     this.element.addEventListener('keydown', (event) => {
       if (event.key === 'Escape' && !event.defaultPrevented) this.close();
     });
+    // On phones the on-screen keyboard covers the bottom of the sheet: keep the focused field visible.
+    this.element.addEventListener('focusin', (event) => {
+      const field = event.target as HTMLElement;
+      if (field.matches('input, textarea') && window.visualViewport) window.setTimeout(() => field.scrollIntoView({ block: 'nearest' }), 300);
+    });
   }
+
+  /** Space taken by the on-screen keyboard, as padding at the bottom of the sheet. */
+  private readonly trackKeyboard = (): void => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const covered = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+    this.element.style.setProperty('--kb-inset', `${Math.round(covered)}px`);
+  };
 
   get isOpen(): boolean {
     return this.element.classList.contains('open');
@@ -32,6 +45,7 @@ export class DeckEditor {
     this.element.classList.add('open');
     // Focus stays inside the drawer: everything behind it is inert until it closes.
     this.app.setBackgroundInert(true);
+    window.visualViewport?.addEventListener('resize', this.trackKeyboard);
     this.element.querySelector<HTMLTextAreaElement>('textarea')?.focus();
   }
 
@@ -40,6 +54,8 @@ export class DeckEditor {
     this.element.classList.remove('open');
     this.element.inert = true;
     this.app.setBackgroundInert(false);
+    window.visualViewport?.removeEventListener('resize', this.trackKeyboard);
+    this.element.style.removeProperty('--kb-inset');
     this.pendingImport = null;
     void this.app.reload().then(() => {
       // Re-rendering usually replaces the opener, so fall back to the home panel's main action.
