@@ -6,6 +6,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@supabase/supabase-js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { exportBackup, importBackup, parseBackup } from '../data/backup';
 import { openDatabase } from '../data/db';
 import { Repo } from '../data/repo';
 import { SyncEngine } from './engine';
@@ -130,6 +131,50 @@ describe.skipIf(!url || !publishableKey || !secretKey)('sync against local Supab
     expect((await two.repo.listDecks()).map((d) => d.name)).toEqual(['Spanish']);
     const { data } = await two.client.from('decks').select('name');
     expect(data).toEqual([{ name: 'Spanish' }]);
+  });
+
+  it('a JSON backup imported while signed in becomes what the server holds', async () => {
+    const credentials = await account();
+    const a = await device(credentials);
+    const keep = await a.repo.createDeck('Keep');
+    const [card] = await a.repo.addCards(keep.id, [{ front: 'as backed up', back: 'b' }], DAY);
+    await a.engine.sync();
+    const backup = parseBackup(JSON.stringify(await exportBackup(a.repo.db)));
+
+    await a.repo.updateCard(card!.id, { front: 'changed later', back: 'b' });
+    await a.repo.createDeck('Made later');
+    await a.engine.sync();
+
+    await importBackup(a.repo.db, backup);
+    await a.engine.sync();
+    const { data: decks } = await a.client.from('decks').select('name').is('deleted_at', null);
+    const { data: cards } = await a.client.from('cards').select('front').is('deleted_at', null);
+    expect(decks).toEqual([{ name: 'Keep' }]);
+    expect(cards).toEqual([{ front: 'as backed up' }]);
+  });
+
+  it('clearing site data and signing in again restores everything, deletions included', async () => {
+    const credentials = await account();
+    const before = await device(credentials);
+    const deck = await before.repo.createDeck('Biology');
+    const [kept, gone] = await before.repo.addCards(
+      deck.id,
+      [
+        { front: 'kept', back: 'b' },
+        { front: 'gone', back: 'b' },
+      ],
+      DAY,
+    );
+    await before.repo.gradeCard(kept!.id, true, DAY);
+    await before.repo.deleteCard(gone!.id);
+    await before.engine.sync();
+
+    // A fresh database on the same browser: what a user gets after clearing site data.
+    const after = await device(credentials);
+    await after.engine.sync();
+    expect((await after.repo.listDecks()).map((d) => d.name)).toEqual(['Biology']);
+    expect((await after.repo.listCards(deck.id)).map((c) => [c.front, c.box])).toEqual([['kept', 2]]);
+    expect(await after.repo.getCard(gone!.id)).toBeNull();
   });
 
   it('deleting the account removes every row and other devices learn it at their next sync', async () => {
