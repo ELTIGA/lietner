@@ -1,8 +1,11 @@
 import type { Repo } from '../data/repo';
-import type { SyncEngine } from './engine';
+import type { SyncEngine, SyncStatus } from './engine';
 
 /** Quiet period after the last local change (a grade, an edit) before pushing it. */
 const DEBOUNCE_MS = 2000;
+/** While the backend is unreachable, try again after 30 s, doubling up to 5 minutes. */
+const RETRY_FIRST_MS = 30_000;
+const RETRY_MAX_MS = 300_000;
 
 /**
  * When to sync while signed in: shortly after local changes, when the app comes back to the
@@ -10,6 +13,8 @@ const DEBOUNCE_MS = 2000;
  */
 export class SyncScheduler {
   private timer = 0;
+  private retryTimer = 0;
+  private retryDelay = RETRY_FIRST_MS;
   private readonly cleanups: Array<() => void> = [];
 
   constructor(
@@ -41,6 +46,18 @@ export class SyncScheduler {
     this.timer = window.setTimeout(() => void this.engine.sync(), DEBOUNCE_MS);
   }
 
+  /** Called with each sync status: schedules a retry with backoff while sync is paused. */
+  noteStatus(status: SyncStatus): void {
+    if (status === 'synced') {
+      window.clearTimeout(this.retryTimer);
+      this.retryDelay = RETRY_FIRST_MS;
+    } else if (status === 'paused') {
+      window.clearTimeout(this.retryTimer);
+      this.retryTimer = window.setTimeout(() => void this.engine.sync(), this.retryDelay);
+      this.retryDelay = Math.min(this.retryDelay * 2, RETRY_MAX_MS);
+    }
+  }
+
   /** Sync now (skipping the debounce) and wait for it, e.g. before signing out. */
   async flush(): Promise<void> {
     window.clearTimeout(this.timer);
@@ -49,6 +66,7 @@ export class SyncScheduler {
 
   stop(): void {
     window.clearTimeout(this.timer);
+    window.clearTimeout(this.retryTimer);
     for (const cleanup of this.cleanups.splice(0)) cleanup();
   }
 }

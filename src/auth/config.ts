@@ -19,6 +19,17 @@ export function hasStoredSession(): boolean {
   }
 }
 
+/** The user saved with the stored session, read without the SDK (and without the network). */
+export function storedSessionUser(): { id: string; email?: string } | null {
+  try {
+    const stored = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) ?? 'null') as { user?: { id?: unknown; email?: unknown } } | null;
+    const id = stored?.user?.id;
+    return typeof id === 'string' ? { id, email: typeof stored?.user?.email === 'string' ? stored.user.email : undefined } : null;
+  } catch {
+    return null;
+  }
+}
+
 /** The installed iOS home-screen app, where Google's sign-in popup is unreliable. */
 export function isIosStandalone(): boolean {
   return (navigator as Navigator & { standalone?: boolean }).standalone === true;

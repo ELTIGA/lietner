@@ -52,6 +52,8 @@ export default defineConfig({
     }),
   ],
   test: {
+    // Playwright owns e2e/.
+    include: ['src/**/*.test.ts'],
     environment: 'node',
     setupFiles: ['fake-indexeddb/auto'],
   },

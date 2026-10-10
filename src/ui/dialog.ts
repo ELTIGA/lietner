@@ -80,16 +80,17 @@ export function openDialog<T>(spec: DialogSpec<T>): Promise<T> {
 export interface ConfirmOptions {
   title: string;
   confirmLabel?: string;
+  cancelLabel?: string;
   danger?: boolean;
 }
 
-export function confirmDialog(message: string, { title, confirmLabel = t.dialog.ok, danger = false }: ConfirmOptions): Promise<boolean> {
+export function confirmDialog(message: string, { title, confirmLabel = t.dialog.ok, cancelLabel = t.dialog.cancel, danger = false }: ConfirmOptions): Promise<boolean> {
   return openDialog<boolean>({
     title,
     cancelValue: false,
     body: () => [h('p', { class: 'dialog-message' }, message)],
     actions: [
-      { label: t.dialog.cancel, value: false, autofocus: danger },
+      { label: cancelLabel, value: false, autofocus: danger },
       { label: confirmLabel, value: true, tone: danger ? 'danger' : 'primary', autofocus: !danger },
     ],
   });

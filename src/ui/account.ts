@@ -1,5 +1,5 @@
 import type { SessionUser } from '../auth/session';
-import { hasStoredSession, syncAvailable } from '../auth/config';
+import { hasStoredSession, storedSessionUser, syncAvailable } from '../auth/config';
 import { wipeAccountData } from '../data/wipe';
 import type { SyncStatus } from '../sync/engine';
 import { SyncEngine } from '../sync/engine';
@@ -62,9 +62,17 @@ export class Account {
   /** At start, after the first render: resume a stored session and start syncing. */
   async restore(): Promise<void> {
     if (!syncAvailable || !hasStoredSession()) return;
+    // Show the signed-in state straight away from storage: offline, the SDK can spend
+    // half a minute retrying a token refresh before it answers.
+    const stored = storedSessionUser();
+    if (stored) {
+      this.user = { id: stored.id, email: stored.email ?? '' };
+      this.status = 'syncing';
+      this.emit();
+    }
     try {
       const session = await this.load();
-      const user = await session.currentUser();
+      const user = stored ? this.user! : await session.currentUser();
       if (user) this.startSync(user, session);
     } catch (error) {
       console.error('Could not restore the session', error);
@@ -90,7 +98,11 @@ export class Account {
         return true;
       });
       if (accountHasData) {
-        const merge = await confirmDialog(t.account.mergeBody(localDecks.length), { title: t.account.mergeTitle, confirmLabel: t.account.mergeConfirm });
+        const merge = await confirmDialog(t.account.mergeBody(localDecks.length), {
+          title: t.account.mergeTitle,
+          confirmLabel: t.account.mergeConfirm,
+          cancelLabel: t.account.mergeCancel,
+        });
         if (!merge) {
           // Still guest data: sign out without touching it.
           await session.signOutHere();
@@ -98,6 +110,8 @@ export class Account {
         }
       }
     }
+    // A never-studied sample deck must not overwrite the account's progress on the same deck.
+    await this.app.deps.repo.yieldPristineSample();
     this.startSync(user, session);
     showToast(t.account.welcome(user.email));
   }
@@ -107,6 +121,7 @@ export class Account {
     this.engine = new SyncEngine(this.app.deps.db, session.createRemote(user.id), {
       onStatus: (status) => {
         this.status = status;
+        this.scheduler?.noteStatus(status);
         this.emit();
       },
       onChanged: () => this.app.onRemoteChanges(),

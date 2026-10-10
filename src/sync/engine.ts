@@ -119,6 +119,11 @@ export class SyncEngine {
   }
 
   private async run(): Promise<void> {
+    // Known offline: say so now instead of waiting for requests to time out; 'online' retries.
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      this.setStatus('offline');
+      return;
+    }
     this.setStatus('syncing');
     try {
       const account = await this.remote.checkAccount();

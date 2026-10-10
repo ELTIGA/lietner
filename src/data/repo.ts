@@ -86,6 +86,26 @@ export class Repo {
     return deck;
   }
 
+  /**
+   * Before a first sign-in merges guest data into an account: untouched sample rows (never
+   * studied or edited) become the oldest possible version, so a sample deck the account already
+   * holds, with real progress on it, wins. Without that copy they simply upload.
+   */
+  async yieldPristineSample(): Promise<void> {
+    const tx = this.db.transaction(['decks', 'cards'], 'readwrite');
+    const decks = (await tx.objectStore('decks').getAll()).filter((deck) => deck.sample && deck.dirty === 1 && deck.updatedAt === deck.createdAt);
+    const writes: Array<Promise<unknown>> = [];
+    for (const deck of decks) {
+      writes.push(tx.objectStore('decks').put({ ...deck, updatedAt: 1 }));
+      const cards = await tx.objectStore('cards').index('deckId').getAll(deck.id);
+      for (const card of cards) {
+        const pristine = card.dirty === 1 && card.deletedAt === null && card.box === 1 && card.history.length === 0 && card.updatedAt === card.createdAt;
+        if (pristine) writes.push(tx.objectStore('cards').put({ ...card, updatedAt: 1 }));
+      }
+    }
+    await Promise.all([...writes, tx.done]);
+  }
+
   async renameDeck(id: string, name: string): Promise<void> {
     const deck = await this.db.get('decks', id);
     if (!isLive(deck)) return;

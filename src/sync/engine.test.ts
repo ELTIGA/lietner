@@ -183,6 +183,33 @@ describe('SyncEngine', () => {
     expect(remote.tables.decks.get(SAMPLE_DECK_ID)?.sample).toBe(true);
   });
 
+  it('a fresh sample deck on a new device never resets sample progress already in the account', async () => {
+    const sample = [
+      { front: 'hola', back: 'hello' },
+      { front: 'adiós', back: 'goodbye' },
+    ];
+    const laptop = await device(remote);
+    await laptop.repo.createSampleDeck('Spanish basics', sample, DAY);
+    const [studied] = await laptop.repo.listCards(SAMPLE_DECK_ID);
+    await laptop.repo.gradeCard(studied!.id, true, DAY);
+    await laptop.repo.gradeCard(studied!.id, true, DAY + 2);
+    await laptop.engine.sync();
+
+    // Weeks later: a new phone loads the sample as a guest, then signs in.
+    setClock(remote, START + 24 * HOUR);
+    const phone = await device(remote);
+    await phone.repo.createSampleDeck('Spanish basics', sample, DAY + 20);
+    await phone.repo.yieldPristineSample();
+    await phone.engine.sync();
+    await laptop.engine.sync();
+
+    expect(remote.tables.cards.get(studied!.id)!.box).toBe(3);
+    for (const dev of [laptop, phone]) {
+      expect((await dev.repo.getCard(studied!.id))!.box).toBe(3);
+      expect(await allCards(dev.repo)).toHaveLength(2);
+    }
+  });
+
   it('a JSON backup imported while signed in becomes what the server holds', async () => {
     const a = await device(remote);
     const keep = await a.repo.createDeck('Keep');

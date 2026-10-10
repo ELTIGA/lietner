@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { isAuthApiError, isAuthRetryableFetchError, isAuthSessionMissingError } from '@supabase/supabase-js';
 
+import { hasStoredSession } from '../auth/config';
 import type { Box } from '../domain/types';
 import type { AccountState, Cursor, PushResult, Remote, Stored, SyncCard, SyncDeck, SyncRows, Table } from './remote';
 import { parseTimestamp, RemoteUnavailable } from './remote';
@@ -88,7 +89,12 @@ export class SupabaseRemote implements Remote {
     const { data, error } = await this.client.auth.getUser();
     if (!error && data.user) return 'ok';
     if (isAuthApiError(error) && error.code === 'user_not_found') return 'deleted';
-    if (isAuthSessionMissingError(error)) return 'signedOut';
+    // The SDK only removes a stored session once it is definitely invalid; while one is still
+    // stored, a missing session means the refresh couldn't reach the server.
+    if (isAuthSessionMissingError(error)) {
+      if (hasStoredSession()) throw unavailable(0, error)!;
+      return 'signedOut';
+    }
     if (isAuthApiError(error) && (SESSION_ENDED_CODES.has(error.code ?? '') || error.status === 401 || error.status === 403)) return 'signedOut';
     if (isAuthRetryableFetchError(error)) throw unavailable(0, error)!;
     throw unavailable(isAuthApiError(error) ? error.status : 0, error) ?? new RemoteUnavailable('paused', error);
