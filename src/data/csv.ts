@@ -11,8 +11,9 @@ export interface CsvResult {
   tooLong: number;
 }
 
-const FRONT_HEADERS = ['front', 'question', 'term', 'word', 'q'];
-const BACK_HEADERS = ['back', 'answer', 'definition', 'meaning', 'a'];
+/** Column headers (and JSON keys, see import.ts) accepted for each side. */
+export const FRONT_HEADERS = ['front', 'question', 'term', 'word', 'q'];
+export const BACK_HEADERS = ['back', 'answer', 'definition', 'meaning', 'a'];
 
 /**
  * Parses comma- or tab-separated text (Anki's plain-text export included).
@@ -41,12 +42,15 @@ export function parseCards(text: string): CsvResult {
     }
   }
 
+  return collectCards(rows.map((row): [string, string] => [row[frontIndex]?.trim() ?? '', row[backIndex]?.trim() ?? '']));
+}
+
+/** Sorts trimmed front/back pairs into cards, rows missing a side, and rows that are too long. */
+export function collectCards(pairs: Iterable<readonly [string, string]>): CsvResult {
   const cards: CardDraft[] = [];
   let skipped = 0;
   let tooLong = 0;
-  for (const row of rows) {
-    const front = row[frontIndex]?.trim() ?? '';
-    const back = row[backIndex]?.trim() ?? '';
+  for (const [front, back] of pairs) {
     if (!front || !back) skipped++;
     else if (charLength(front) > LIMITS.sideChars || charLength(back) > LIMITS.sideChars) tooLong++;
     else cards.push({ front, back });

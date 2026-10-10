@@ -1,19 +1,20 @@
-import { parseCards } from '../data/csv';
-import type { CsvResult } from '../data/csv';
+import type { ImportResult } from '../data/import';
+import { parseImport } from '../data/import';
 import { today } from '../domain/day';
 import type { Card } from '../domain/types';
 import { LIMITS, MASTERED } from '../domain/types';
 import { t } from '../strings';
 import type { App } from './app';
 import { confirmDialog } from './dialog';
-import { h } from './dom';
+import { h, watchKeyboardInset } from './dom';
 import { showError } from './toast';
 
 /** Slide-in drawer for renaming a deck, adding/importing cards and editing the card list. */
 export class DeckEditor {
   readonly element = h('aside', { class: 'drawer', 'aria-label': t.editor.label, inert: true });
-  private pendingImport: CsvResult | null = null;
+  private pendingImport: ImportResult | null = null;
   private opener: HTMLElement | null = null;
+  private stopKeyboardWatch: (() => void) | null = null;
 
   constructor(private readonly app: App) {
     this.element.addEventListener('keydown', (event) => {
@@ -26,14 +27,6 @@ export class DeckEditor {
     });
   }
 
-  /** Space taken by the on-screen keyboard, as padding at the bottom of the sheet. */
-  private readonly trackKeyboard = (): void => {
-    const viewport = window.visualViewport;
-    if (!viewport) return;
-    const covered = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
-    this.element.style.setProperty('--kb-inset', `${Math.round(covered)}px`);
-  };
-
   get isOpen(): boolean {
     return this.element.classList.contains('open');
   }
@@ -45,7 +38,8 @@ export class DeckEditor {
     this.element.classList.add('open');
     // Focus stays inside the drawer: everything behind it is inert until it closes.
     this.app.setBackgroundInert(true);
-    window.visualViewport?.addEventListener('resize', this.trackKeyboard);
+    // Space taken by the on-screen keyboard, as padding at the bottom of the sheet.
+    this.stopKeyboardWatch = watchKeyboardInset(this.element);
     this.element.querySelector<HTMLTextAreaElement>('textarea')?.focus();
   }
 
@@ -54,8 +48,8 @@ export class DeckEditor {
     this.element.classList.remove('open');
     this.element.inert = true;
     this.app.setBackgroundInert(false);
-    window.visualViewport?.removeEventListener('resize', this.trackKeyboard);
-    this.element.style.removeProperty('--kb-inset');
+    this.stopKeyboardWatch?.();
+    this.stopKeyboardWatch = null;
     this.pendingImport = null;
     void this.app.reload().then(() => {
       // Re-rendering usually replaces the opener, so fall back to the home panel's main action.
@@ -125,14 +119,14 @@ export class DeckEditor {
     const confirm = h('button', { class: 'btn primary', type: 'button', disabled: true }, t.editor.import);
 
     const preparse = (text: string) => {
-      this.pendingImport = text.trim() ? parseCards(text) : null;
+      this.pendingImport = text.trim() ? parseImport(text) : null;
       const result = this.pendingImport;
       confirm.disabled = !result?.cards.length;
-      preview.textContent = result ? t.editor.importReady(result.cards.length, result.skipped, result.tooLong) : '';
+      showImportPreview(preview, result);
     };
     const file = h('input', {
       type: 'file',
-      accept: '.csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain',
+      accept: '.json,.csv,.tsv,.txt,application/json,text/csv,text/tab-separated-values,text/plain',
       class: 'file-input',
       'aria-label': t.editor.importFile,
       onchange: async () => {
@@ -224,4 +218,11 @@ export class DeckEditor {
     const list = this.element.querySelector('.card-list');
     list?.replaceWith(this.cardList());
   }
+}
+
+/** Says what a paste would import, or why it can't (in red). Shared with the starter sheet. */
+export function showImportPreview(preview: HTMLElement, result: ImportResult | null): void {
+  const bad = result?.error === 'badJson';
+  preview.textContent = !result ? '' : bad ? t.starter.badJson : t.editor.importReady(result.cards.length, result.skipped, result.tooLong);
+  preview.classList.toggle('error', bad);
 }

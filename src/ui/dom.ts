@@ -39,3 +39,22 @@ export function isTyping(event: KeyboardEvent): boolean {
 export function anyDialogOpen(): boolean {
   return document.querySelector('dialog[open]') !== null;
 }
+
+/**
+ * Keeps `--kb-inset` on `element` equal to the height the on-screen keyboard covers, so CSS can lift
+ * bottom-anchored content above it. Returns a function that stops watching.
+ */
+export function watchKeyboardInset(element: HTMLElement): () => void {
+  const viewport = window.visualViewport;
+  if (!viewport) return () => {};
+  const update = () => {
+    const covered = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+    element.style.setProperty('--kb-inset', `${Math.round(covered)}px`);
+  };
+  viewport.addEventListener('resize', update);
+  update();
+  return () => {
+    viewport.removeEventListener('resize', update);
+    element.style.removeProperty('--kb-inset');
+  };
+}

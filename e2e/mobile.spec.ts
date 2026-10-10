@@ -16,6 +16,20 @@ test.describe('phones', () => {
     await expect(hint).toHaveCount(0);
   });
 
+  test('the starter sheet fits on screen with 48px controls', async ({ page }) => {
+    await openApp(page);
+    await page.getByRole('button', { name: 'Create deck' }).click();
+    const sheet = page.locator('.starter');
+    await expect(sheet).toBeVisible();
+    const box = (await sheet.boundingBox())!;
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+    for (const name of ['Copy prompt', 'Import cards']) {
+      const button = (await sheet.getByRole('button', { name }).boundingBox())!;
+      expect(button.height).toBeGreaterThanOrEqual(48);
+    }
+  });
+
   test('controls meet the 48px touch target size', async ({ page }) => {
     await openApp(page);
     await page.getByRole('button', { name: /Spanish sample deck/ }).click();

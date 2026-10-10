@@ -7,6 +7,7 @@ test.describe('deck editor', () => {
     await openApp(page);
     await page.getByRole('textbox', { name: 'Deck name' }).fill('Biology');
     await page.getByRole('button', { name: 'Create deck' }).click();
+    await page.getByRole('button', { name: 'or add cards by hand' }).click();
 
     const editor = page.locator('aside.drawer.open');
     await expect(editor).toBeVisible();
@@ -33,7 +34,7 @@ test.describe('deck editor', () => {
     await expect(page.locator('.home-status')).toHaveText('1 card due today');
 
     await page.keyboard.press('e');
-    if (!(await editor.isVisible())) await page.getByRole('button', { name: /Add cards|Edit deck|Menu/ }).first().click();
+    if (!(await editor.isVisible())) await page.getByRole('button', { name: /Edit deck|Menu/ }).first().click();
     await expect(editor).toBeVisible();
     await expect(editor.locator('.card-row').first().getByRole('textbox', { name: 'Front' })).toHaveValue('ribosome');
     await editor.getByRole('button', { name: /Delete card ribosome/ }).click();
@@ -46,16 +47,27 @@ test.describe('deck editor', () => {
     await expect(page.locator('.welcome')).toBeVisible();
   });
 
-  test('imports CSV rows and reports skipped ones', async ({ page }) => {
+  test('imports CSV rows and JSON cards, and reports skipped ones', async ({ page }) => {
     await openApp(page);
     await page.getByRole('textbox', { name: 'Deck name' }).fill('Imported');
     await page.getByRole('button', { name: 'Create deck' }).click();
+    await page.getByRole('button', { name: 'or add cards by hand' }).click();
     const editor = page.locator('aside.drawer.open');
-    await editor.getByText('Import CSV / Anki text export').click();
-    await editor.getByRole('textbox', { name: 'CSV text' }).fill('front,back\nuno,one\ndos,two\nonly-front\n');
+    await editor.getByText('Import JSON, CSV or Anki text export').click();
+    const paste = editor.getByRole('textbox', { name: 'Cards to import' });
+    await paste.fill('front,back\nuno,one\ndos,two\nonly-front\n');
     await expect(editor.locator('.import-preview')).toHaveText('2 cards ready, 1 row skipped (missing front or back).');
     await editor.getByRole('button', { name: 'Import', exact: true }).click();
     await expect(editor.locator('.card-list h3')).toHaveText('2 cards');
+
+    await paste.fill('[{"front": "tres", "back": ');
+    await expect(editor.locator('.import-preview.error')).toHaveText(/doesn’t look like the cards block/);
+    await paste.fill('```json\n{"deck": "Numbers", "cards": [{"front": "tres", "back": "three"}]}\n```');
+    await expect(editor.locator('.import-preview')).toHaveText('1 card ready.');
+    await editor.getByRole('button', { name: 'Import', exact: true }).click();
+    await expect(editor.locator('.card-list h3')).toHaveText('3 cards');
+    // The editor ignores the JSON's deck name: this deck already has one.
+    await expect(editor.getByRole('textbox', { name: 'Deck name' })).toHaveValue('Imported');
   });
 
   test('new deck uses the in-app dialog, not window.prompt', async ({ page }) => {
@@ -74,7 +86,7 @@ test.describe('deck editor', () => {
     const dialog = page.getByRole('dialog', { name: 'New deck' });
     await dialog.getByRole('textbox', { name: 'Deck name' }).fill('Chemistry');
     await dialog.getByRole('button', { name: 'Create' }).click();
-    await expect(page.locator('aside.drawer.open')).toBeVisible();
+    await expect(page.locator('.starter')).toBeVisible();
     await expect(page.locator('.deck-select')).toContainText('Chemistry');
   });
 });

@@ -15,6 +15,7 @@ import { attachSwipe } from './gestures';
 import { ReviewSession } from './review';
 import { SettingsDialog } from './settings';
 import { isIosSafari } from './pwa';
+import { StarterSheet } from './starterSheet';
 import { showError } from './toast';
 
 const META_LAST_DECK = 'lastDeck';
@@ -45,6 +46,10 @@ export class App {
   private readonly editor: DeckEditor;
   private readonly settings: SettingsDialog;
   private session: ReviewSession | null = null;
+  /** The home panel while the deck has no cards. */
+  private starter: StarterSheet | null = null;
+  /** The deck that was open before the last one was created, for the starter sheet's ✕. */
+  private deckBeforeCreate: string | null = null;
   /** Sync pulled changes while a review or the editor was open; redraw when it closes. */
   private reloadPending = false;
   private installHintDismissed = true;
@@ -104,10 +109,15 @@ export class App {
     this.refresh();
   }
 
-  /** Sync changed local data: redraw now, or as soon as the review or the editor closes. */
+  /** Sync changed local data: redraw now, or once the review, the editor or a half-done paste is out of the way. */
   onRemoteChanges(): void {
-    if (this.session || this.editor.isOpen) this.reloadPending = true;
+    if (this.session || this.editor.isOpen || this.starter?.busy) this.reloadPending = true;
     else void this.reload();
+  }
+
+  /** The starter sheet's paste box was emptied: catch up on changes held back while it had text. */
+  starterIdle(): void {
+    if (this.reloadPending && !this.editor.isOpen) void this.reload();
   }
 
   /** Reload decks and cards from storage, then redraw. */
@@ -120,8 +130,10 @@ export class App {
 
   /** Creates and selects a deck; false if a limit (or storage) stopped it, after telling the user. */
   async createDeck(name: string): Promise<boolean> {
+    const previous = this.deck?.id ?? null;
     try {
       const deck = await this.deps.repo.createDeck(name);
+      this.deckBeforeCreate = previous;
       this.decks = await this.deps.repo.listDecks();
       await this.selectDeck(deck);
       return true;
@@ -129,6 +141,26 @@ export class App {
       showError(error, t.errors.saveFailed);
       return false;
     }
+  }
+
+  /** The starter sheet's ✕: drops the empty deck and goes back to the deck that was open before it. */
+  async discardEmptyDeck(): Promise<void> {
+    const { deck } = this;
+    if (!deck) return;
+    try {
+      // Sync may have brought cards in since the sheet was drawn; never discard those.
+      if ((await this.deps.repo.listCards(deck.id)).length) {
+        await this.reload();
+        return;
+      }
+      await this.deps.repo.deleteDeck(deck.id);
+    } catch (error) {
+      showError(error, t.errors.saveFailed);
+      return;
+    }
+    this.decks = await this.deps.repo.listDecks();
+    await this.selectDeck(this.decks.find((other) => other.id === this.deckBeforeCreate) ?? this.decks[0] ?? null);
+    this.focusHome();
   }
 
   async loadSample(): Promise<void> {
@@ -179,7 +211,8 @@ export class App {
 
   /** Puts keyboard focus back on the desk after a drawer or dialog closes. */
   focusHome(): void {
-    this.stage.querySelector<HTMLElement>('.btn.primary, .field')?.focus();
+    if (this.starter) this.starter.focus();
+    else this.stage.querySelector<HTMLElement>('.btn.primary, .field')?.focus();
   }
 
   /** Makes everything behind the editor drawer inert while it is open. */
@@ -256,31 +289,35 @@ export class App {
   }
 
   private renderHome(): void {
+    this.starter?.dispose();
+    this.starter = null;
     if (!this.deck) {
       this.stage.replaceChildren(this.welcomePanel());
       return;
     }
+    const total = this.cards.length;
+    if (total === 0) {
+      this.starter = new StarterSheet(this, footerLinks());
+      this.stage.replaceChildren(this.starter.element);
+      return;
+    }
     const due = this.dueCount;
     const counts = boxCounts(this.cards);
-    const total = this.cards.length;
     const nextDue = this.cards.filter((card) => card.box !== MASTERED).reduce((min, card) => Math.min(min, card.dueDay), Infinity);
 
     let status: string;
-    if (total === 0) status = t.home.empty;
-    else if (due > 0) status = t.home.due(due);
+    if (due > 0) status = t.home.due(due);
     else if (Number.isFinite(nextDue)) status = t.home.caughtUp(relativeDay(nextDue));
     else status = t.home.allMastered;
 
     this.stage.replaceChildren(
       h(
         'section',
-        { class: 'home-panel', 'aria-live': 'polite' },
+        { class: 'home-panel' },
         h('p', { class: 'eyebrow' }, this.deck.name),
-        h('h1', { class: 'home-status' }, status),
+        h('h1', { class: 'home-status', 'aria-live': 'polite' }, status),
         h('p', { class: 'home-meta' }, t.home.meta(total, counts[MASTERED])),
-        due > 0
-          ? h('button', { class: 'btn primary large', onclick: () => this.startReview() }, t.home.startReview, kbd('↵'))
-          : total === 0 && h('button', { class: 'btn primary large', onclick: () => this.openEditor() }, t.home.addCards, kbd('E')),
+        due > 0 && h('button', { class: 'btn primary large', onclick: () => this.startReview() }, t.home.startReview, kbd('↵')),
         footerLinks(),
       ),
     );
@@ -290,7 +327,7 @@ export class App {
     const name = h('input', { class: 'field', placeholder: t.welcome.deckNamePlaceholder, 'aria-label': t.welcome.deckNameLabel, maxLength: 80, dir: 'auto' });
     const create = (event: Event) => {
       event.preventDefault();
-      void this.createDeck(name.value || t.welcome.defaultDeckName).then((created) => created && this.openEditor());
+      void this.createDeck(name.value || t.welcome.defaultDeckName).then((created) => created && this.focusHome());
     };
     return h(
       'section',
@@ -331,7 +368,7 @@ export class App {
   private async promptNewDeck(): Promise<void> {
     const name = await promptDialog({ title: t.newDeck.title, label: t.newDeck.label, maxLength: 80, confirmLabel: t.newDeck.create });
     if (name === null) return;
-    if (await this.createDeck(name || t.untitledDeck)) this.openEditor();
+    if (await this.createDeck(name || t.untitledDeck)) this.focusHome();
   }
 
   private readonly onKey = (event: KeyboardEvent): void => {
@@ -342,6 +379,8 @@ export class App {
     }
     if (this.editor.isOpen || this.settings.isOpen) return;
     if (event.key === 'Enter') {
+      // A focused button or link keeps Enter for itself (Copy prompt is focused on a new deck).
+      if ((event.target as HTMLElement | null)?.closest?.('button, a, summary')) return;
       event.preventDefault();
       this.startReview();
     } else if (event.key.toLowerCase() === 'e') {
@@ -351,7 +390,7 @@ export class App {
   };
 }
 
-/** Privacy, terms and source, at the foot of the home panel. */
+/** Privacy, terms, source and author credit, at the foot of the home panel. */
 function footerLinks(): HTMLElement {
   return h(
     'nav',
@@ -359,6 +398,7 @@ function footerLinks(): HTMLElement {
     h('a', { href: '/privacy' }, t.footer.privacy),
     h('a', { href: '/terms' }, t.footer.terms),
     h('a', { href: 'https://github.com/ELTIGA/lietner', target: '_blank', rel: 'noopener' }, t.footer.source),
+    h('span', { class: 'panel-credit' }, `${t.footer.builtBy} `, h('a', { href: 'https://ahmedeltigani.com', target: '_blank', rel: 'noopener' }, t.footer.author)),
   );
 }
 

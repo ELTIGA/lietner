@@ -26,13 +26,47 @@ export const t = {
   },
 
   home: {
-    empty: 'This deck is empty. Add cards to start.',
     due: (count: number) => `${plural(count, 'card')} due today`,
     caughtUp: (when: string) => `All caught up. Next review ${when}.`,
     allMastered: 'Every card mastered.',
     meta: (total: number, mastered: number) => `${plural(total, 'card')} · ${numberFormat.format(mastered)} mastered`,
     startReview: 'Start review',
-    addCards: 'Add cards',
+  },
+
+  starter: {
+    title: 'Before you start, let an AI write your cards.',
+    copyStep: 'Copy the prompt',
+    copyHint: 'Paste it into your favourite AI (ChatGPT, Claude, Gemini…) and attach the book, PDF or notes you want to study. It asks you three quick questions, then writes about 30 cards.',
+    copyPrompt: 'Copy prompt',
+    copied: 'Copied ✓',
+    copyFailed: 'Your browser blocked copying. Select the prompt below and copy it yourself.',
+    promptLabel: 'Prompt',
+    pasteStep: 'Paste the AI’s reply',
+    pasteHint: 'Copy its whole code block and paste it here.',
+    pasteLabel: 'Cards from your AI',
+    pastePlaceholder: '{"deck": "…", "cards": [ … ]}',
+    import: 'Import cards',
+    byHand: 'or add cards by hand',
+    discard: 'Discard this empty deck',
+    badJson: 'That doesn’t look like the cards block. Copy the AI’s whole code block and try again.',
+    /** Copied to the clipboard and pasted into the student's own AI, so it stays in English with straight quotes. */
+    prompt: `I want to study the material I've attached (or will paste) with flashcards in Lietner, a Leitner-box flashcard app. Help me make about 30 cards.
+
+Step 1. If I haven't attached or pasted any material yet, ask me for it and stop there.
+
+Step 2. Read the material, then ask me these three questions in ONE message, numbered 1 to 3. Give each question 3 or 4 lettered options that fit this specific material (for example, its real chapter or section names). I'll reply like "1b 2a 3c" or in my own words. Don't write any cards yet.
+1. Scope: which part should the cards cover (one chapter or section, several, or all of it)?
+2. Depth: big-picture ideas and key terms, or specific details (names, dates, numbers, steps)?
+3. Difficulty: beginner, intermediate, or exam-level?
+
+Step 3. After I answer, write about 30 cards that match my answers:
+- One fact or idea per card. The front is a question; the back is a short answer (aim for under 200 characters, never over ${numberFormat.format(LIMITS.sideChars)}).
+- Plain text only: no Markdown, LaTeX, HTML or images. Write maths in words or Unicode (x², √, π).
+- Use the same language as the material unless I ask otherwise.
+- No duplicate cards.
+
+Reply with exactly one JSON code block in this shape, and nothing else:
+{"deck": "Short deck name", "cards": [{"front": "Question", "back": "Answer"}]}`,
   },
 
   welcome: {
@@ -98,11 +132,11 @@ export const t = {
     front: 'Front',
     back: 'Back',
     addCard: 'Add card',
-    importSummary: 'Import CSV / Anki text export',
-    importHint: 'Two columns, or a header row with front and back. Comma or tab separated.',
-    importPlaceholder: 'Paste CSV or tab-separated rows: front, back',
-    importText: 'CSV text',
-    importFile: 'CSV file',
+    importSummary: 'Import JSON, CSV or Anki text export',
+    importHint: 'JSON cards from an AI, or two columns (a header row with front and back is optional). Comma or tab separated.',
+    importPlaceholder: 'Paste JSON cards, or CSV rows: front, back',
+    importText: 'Cards to import',
+    importFile: 'Import file',
     import: 'Import',
     importReady: (cards: number, skipped: number, tooLong: number) =>
       [
@@ -245,6 +279,8 @@ export const t = {
     privacy: 'Privacy',
     terms: 'Terms',
     source: 'Source',
+    builtBy: 'Built with love by',
+    author: 'Ahmed Eltigani',
   },
 
   dialog: {

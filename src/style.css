@@ -345,6 +345,86 @@ kbd {
   flex: 1;
 }
 
+/* ---------- Starter sheet (empty deck: cards from your own AI) ---------- */
+.home-panel.starter {
+  bottom: calc(32px + var(--kb-inset, 0px));
+  max-height: calc(100dvh - 128px - var(--kb-inset, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* The ruled lines and margin scroll with the text. */
+  background-attachment: local;
+}
+
+.starter .home-status {
+  font-size: 24px;
+  margin-bottom: 22px;
+}
+
+.starter-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+/* Room for the ✕ beside a long deck name. */
+.starter .eyebrow {
+  padding-right: 40px;
+}
+
+.starter-steps {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.starter-steps > li {
+  position: relative;
+  margin-bottom: 22px;
+  padding-left: 40px;
+  counter-increment: step;
+}
+
+/* Step numbers circled in red pen. */
+.starter-steps > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: -3px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--stamp);
+  border-radius: 50%;
+  color: var(--stamp);
+  font: 600 15px var(--font-display);
+  transform: rotate(-6deg);
+}
+
+.starter-step {
+  margin: 0 0 4px;
+  font: 600 18px/1.3 var(--font-display);
+}
+
+.starter .hint {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.starter .field {
+  margin-bottom: 8px;
+}
+
+.starter-prompt {
+  margin-top: 4px;
+}
+
+.import-preview.error {
+  color: var(--miss);
+}
+
 /* ---------- Fields ---------- */
 .field {
   width: 100%;
@@ -770,9 +850,15 @@ kbd {
 
 .panel-links {
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 4px 16px;
   margin-top: 16px;
   font-size: 13px;
+}
+
+.panel-credit {
+  flex-basis: 100%;
+  color: var(--ink-soft);
 }
 
 .panel-links a {
@@ -1244,6 +1330,19 @@ body:has(.review-hud .review-controls) .toasts {
 
   .home-panel .btn.large {
     width: 100%;
+  }
+
+  .home-panel.starter {
+    bottom: calc(max(12px, calc(env(safe-area-inset-bottom) + 8px)) + var(--kb-inset, 0px));
+    max-height: calc(100dvh - 96px - env(safe-area-inset-top) - env(safe-area-inset-bottom) - var(--kb-inset, 0px));
+  }
+
+  .starter .home-status {
+    font-size: 21px;
+  }
+
+  .starter-steps > li {
+    padding-left: 36px;
   }
 
   .review-top {

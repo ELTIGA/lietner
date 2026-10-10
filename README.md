@@ -19,7 +19,7 @@ Cards you know well come back rarely; cards you struggle with come back often. T
 ## Features
 
 - Plain front/back text in any language or script, including right-to-left.
-- Several decks. Add cards in the editor or import CSV/TSV, including Anki's plain-text export.
+- Several decks. Add cards in the editor, import CSV/TSV (including Anki's plain-text export), or copy a prompt into your own AI and paste back the JSON cards it writes.
 - Keyboard shortcuts on desktop (`↵` start, `Space` show answer, `J`/`→` knew, `F`/`←` missed, `Z` undo, `S` skip animation, `Esc` end). Tap to flip and swipe to grade on touch screens.
 - Normal, Fast and Instant animation speeds.
 - Installable app that works fully offline.
@@ -39,7 +39,7 @@ Full details: [Privacy policy](https://lietner.app/privacy) · [Terms](https://l
 ```bash
 npm install
 npm run dev       # http://localhost:5173, guest mode
-npm test          # unit tests: scheduling, CSV, storage, backup, sync
+npm test          # unit tests: scheduling, CSV/JSON import, storage, backup, sync
 npm run build     # typecheck + static site in dist/
 npm run test:e2e  # Playwright: desktop Chrome, emulated iPhone and iPad, no-WebGL text mode
 ```
@@ -74,7 +74,7 @@ Without any `VITE_SUPABASE_*` variables the app runs guest-only, which is also h
 
 ```
 src/domain   pure Leitner logic and calendar-day math (unit tested)
-src/data     IndexedDB (idb), repo, CSV parsing, JSON backup
+src/data     IndexedDB (idb), repo, CSV/JSON card import, JSON backup
 src/sync     sync engine (local-first, last write wins per row) and the Supabase remote
 src/auth     Supabase session, Google ID-token sign-in
 src/scene    three.js stage, desk, boxes, card actor (gsap timelines), canvas textures

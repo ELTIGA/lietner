@@ -20,3 +20,12 @@ test('without WebGL, reviews run in text mode', async ({ page }) => {
   await expect(reviewCount(page)).toHaveText('2 / 25');
   await expect(page.locator('.text-box.b2 .text-box-count')).toHaveText('1');
 });
+
+test('without WebGL, a new deck still gets the starter sheet', async ({ page }) => {
+  await openApp(page);
+  await page.getByRole('button', { name: 'Create deck' }).click();
+  await page.getByRole('textbox', { name: 'Cards from your AI' }).fill('[{"front": "uno", "back": "one"}]');
+  await page.getByRole('button', { name: 'Import cards' }).click();
+  await expect(page.locator('.home-status')).toHaveText('1 card due today');
+  await expect(page.locator('.text-box.b1 .text-box-count')).toHaveText('1');
+});
