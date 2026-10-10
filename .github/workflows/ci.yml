@@ -14,18 +14,20 @@ concurrency:
 
 jobs:
   check:
-    name: Typecheck, unit tests, build
+    name: Lint, typecheck, unit tests, build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: lts/*
+          node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - run: npx biome ci .
+      - run: npm run typecheck
+      - run: npm test
       # No VITE_* variables here: the build is guest-only, like preview deploys.
       - run: npm run build
-      - run: npm test
 
   database:
     name: Row-level security and sync against Supabase
@@ -34,7 +36,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: lts/*
+          node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npx supabase start
@@ -49,7 +51,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: lts/*
+          node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium webkit

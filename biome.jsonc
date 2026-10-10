@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true, "defaultBranch": "main" },
+  "files": {
+    // HTML pages and SQL are formatted by hand; generated and binary assets are skipped.
+    "includes": ["**", "!**/*.html", "!public", "!samples", "!supabase", "!package-lock.json"]
+  },
+  "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 160 },
+  "javascript": { "formatter": { "quoteStyle": "single" } },
+  "css": { "formatter": { "quoteStyle": "single" } },
+  "linter": {
+    "rules": {
+      "preset": "recommended",
+      "style": {
+        // With noUncheckedIndexedAccess on, `!` marks lookups the code has already checked.
+        "noNonNullAssertion": "off",
+        // The stylesheet is ordered by component, not by selector specificity.
+        "noDescendingSpecificity": "off"
+      },
+      "complexity": {
+        // Used deliberately: the reduced-motion override and the wide-only/narrow-only utilities.
+        "noImportantStyles": "off"
+      }
+    }
+  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } }
+}

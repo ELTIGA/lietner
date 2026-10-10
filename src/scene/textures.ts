@@ -109,7 +109,7 @@ function fitText(ctx: CanvasRenderingContext2D, text: string, x: number, y: numb
   ctx.textBaseline = 'middle';
   // Bidi ordering inside each line follows the card's own direction (Arabic, Hebrew).
   ctx.direction = isRtl(text) ? 'rtl' : 'ltr';
-  lines.forEach((line, index) => ctx.fillText(line, x + width / 2, blockTop + lineHeight * (index + 0.5)));
+  for (const [index, line] of lines.entries()) ctx.fillText(line, x + width / 2, blockTop + lineHeight * (index + 0.5));
 }
 
 function paperNoise(ctx: CanvasRenderingContext2D, width: number, height: number): void {

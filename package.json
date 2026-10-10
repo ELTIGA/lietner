@@ -13,15 +13,21 @@
     "url": "https://github.com/ELTIGA/lietner/issues"
   },
   "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
+    "lint": "biome check .",
+    "format": "biome check --write .",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "test:db": "supabase test db",
     "test:integration": "sh -c 'set -a; eval \"$(supabase status -o env)\"; set +a; vitest run src/sync/supabase.integration.test.ts'",
-    "icons": "pwa-assets-generator",
-    "test:e2e": "playwright test"
+    "icons": "pwa-assets-generator"
   },
   "dependencies": {
     "@fontsource/fraunces": "^5.3.0",
@@ -36,7 +42,9 @@
     "three": "^0.186.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.15",
     "@playwright/test": "^1.64.0",
+    "@types/node": "^26.6.5",
     "@types/papaparse": "^5.5.2",
     "@types/three": "^0.186.0",
     "@vite-pwa/assets-generator": "^2.0.0",
