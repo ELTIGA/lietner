@@ -20,6 +20,7 @@ import { Stage } from './scene/stage';
 import { loadFonts } from './scene/textures';
 import type { CardView, DeskView } from './scene/views';
 import { t } from './strings';
+import { startTelemetry } from './telemetry';
 import { App } from './ui/app';
 import { isTyping } from './ui/dom';
 import { setupServiceWorker } from './ui/pwa';
@@ -115,6 +116,7 @@ async function boot(): Promise<void> {
   const app = new App(document.getElementById('app')!, { db, repo: new Repo(db), desk, actor, scene: host, sampleCsv });
   await app.start();
   setupServiceWorker(app);
+  startTelemetry();
   if (import.meta.env.DEV) Object.assign(window, { __leitner: { ...debug, app } });
 }
 

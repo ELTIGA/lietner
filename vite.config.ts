@@ -31,7 +31,8 @@ export default defineConfig({
       workbox: {
         // Everything a guest needs offline, including the Latin font files. Other font subsets
         // and the sign-in SDK chunk are cached the first time they're used.
-        globPatterns: ['**/*.{html,css,svg,png,ico}', 'assets/index-*.js', 'assets/*-latin-[0-9]*.woff2', 'assets/*-latin-ext-*.woff2'],
+        globPatterns: ['**/*.{html,css,svg,png,ico}', 'assets/*.js', 'assets/*-latin-[0-9]*.woff2', 'assets/*-latin-ext-*.woff2'],
+        globIgnores: ['assets/session-*.js', 'assets/sentry-*.js'],
         navigateFallback: 'index.html',
         // The legal pages are their own documents, served from the precache by their clean URLs.
         navigateFallbackDenylist: [/^\/privacy/, /^\/terms/],
