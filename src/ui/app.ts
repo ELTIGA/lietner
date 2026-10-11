@@ -287,6 +287,9 @@ export class App {
         h('button', { class: 'btn icon wide-only', 'aria-label': t.topbar.settings, title: t.topbar.settings, onclick: () => this.settings.open() }, '⚙'),
         h('button', { class: 'btn icon narrow-only', 'aria-label': t.topbar.menu, title: t.topbar.menu, popovertarget: 'topbar-menu' }, '⋯'),
         menu,
+        // The outermost corner: a full button on wide screens, a heart next to the menu on narrow ones.
+        !reviewing && h('a', { class: 'btn primary donate wide-only', href: '/support', title: t.topbar.donateLabel }, t.topbar.donate),
+        !reviewing && h('a', { class: 'btn icon donate narrow-only', href: '/support', 'aria-label': t.topbar.donateLabel, title: t.topbar.donateLabel }, '♥'),
       ),
     );
   }
@@ -393,7 +396,7 @@ export class App {
   };
 }
 
-/** Privacy, terms, source and author credit, at the foot of the home panel. */
+/** Privacy, terms, source, the donation page and author credit, at the foot of the home panel. */
 function footerLinks(): HTMLElement {
   return h(
     'nav',
@@ -401,6 +404,7 @@ function footerLinks(): HTMLElement {
     h('a', { href: '/privacy' }, t.footer.privacy),
     h('a', { href: '/terms' }, t.footer.terms),
     h('a', { href: 'https://github.com/ELTIGA/lietner', target: '_blank', rel: 'noopener' }, t.footer.source),
+    h('a', { href: '/support' }, t.footer.support),
     h(
       'span',
       { class: 'panel-credit' },

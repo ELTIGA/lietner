@@ -26,7 +26,7 @@ The production domain appears in a few static files. Replace `lietner.app` in:
 - `index.html`: the canonical URL, Open Graph and Twitter tags, and JSON-LD.
 - `public/robots.txt` and `public/sitemap.xml`.
 - `vercel.json`: the `www` and `*.vercel.app` redirects.
-- `privacy.html` and `terms.html`.
+- `privacy.html`, `terms.html` and `support.html`.
 
 ## Vercel
 

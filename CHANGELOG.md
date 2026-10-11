@@ -30,6 +30,7 @@ First public release, planned as 0.1.0.
   - Card text is mirrored to an `aria-live` region.
   - In-app dialogs trap and restore focus.
   - Contrast meets WCAG 2.2 AA.
+- **Donations.** A Donate button in the top-right corner of the topbar (a heart on phones) opens a donation page at `/support`, which links to the GoGetFunding campaign.
 - **Privacy-preserving telemetry.** Cookieless page views, plus crash reports with card text scrubbed.
 - **Security.** Security headers and a Content-Security-Policy (report-only at first).
 - **Project infrastructure.**

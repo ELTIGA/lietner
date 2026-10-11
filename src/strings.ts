@@ -23,6 +23,8 @@ export const t = {
     newDeck: 'New deck',
     settings: 'Settings',
     menu: 'Menu',
+    donate: 'Donate',
+    donateLabel: 'Donate to keep Lietner free',
   },
 
   home: {
@@ -280,6 +282,7 @@ Reply with exactly one JSON code block in this shape, and nothing else:
     privacy: 'Privacy',
     terms: 'Terms',
     source: 'Source',
+    support: 'Support',
     builtBy: 'Built with love by',
     author: 'Ahmed Eltigani',
   },

@@ -222,6 +222,16 @@ body {
   background: #c94d36;
 }
 
+/* The topbar's Donate link: a stamp-red button in the corner, a red heart on narrow screens. */
+a.btn.donate {
+  text-decoration: none;
+}
+
+.btn.icon.donate {
+  color: var(--stamp);
+  font-size: 20px;
+}
+
 .btn.know {
   background: var(--know);
   color: #f1f7ee;

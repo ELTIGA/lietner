@@ -5,8 +5,8 @@ export default defineConfig({
   // three.js alone is ~600 kB minified; one chunk is fine for a static app cached by the service worker.
   build: {
     chunkSizeWarningLimit: 900,
-    // The legal pages are plain documents next to the app, served at /privacy and /terms.
-    rollupOptions: { input: { main: 'index.html', privacy: 'privacy.html', terms: 'terms.html' } },
+    // The legal and donation pages are plain documents next to the app, served at /privacy, /terms and /support.
+    rollupOptions: { input: { main: 'index.html', privacy: 'privacy.html', terms: 'terms.html', support: 'support.html' } },
   },
   plugins: [
     VitePWA({
@@ -38,8 +38,8 @@ export default defineConfig({
         globPatterns: ['**/*.{html,css,svg,png,ico}', 'assets/*.js', 'assets/*-latin-[0-9]*.woff2', 'assets/*-latin-ext-*.woff2'],
         globIgnores: ['assets/session-*.js', 'assets/sentry-*.js', 'og.png'],
         navigateFallback: 'index.html',
-        // The legal pages are their own documents, served from the precache by their clean URLs.
-        navigateFallbackDenylist: [/^\/privacy/, /^\/terms/],
+        // The legal and donation pages are their own documents, served from the precache by their clean URLs.
+        navigateFallbackDenylist: [/^\/privacy/, /^\/terms/, /^\/support/],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
