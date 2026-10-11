@@ -57,14 +57,18 @@ export async function currentUser(): Promise<SessionUser | null> {
  * Turns Supabase Auth errors into what the sign-in dialog can explain. A failed send
  * (the email provider's daily cap) comes back as a server error.
  */
-function problemFor(error: unknown, sending: boolean): SignInFailure {
+export function problemFor(error: unknown, sending: boolean): SignInFailure {
   const status = (error as { status?: number } | null)?.status ?? 0;
   // The email provider refusing to send (its daily cap) surfaces as a plain 500 from Auth.
   if (sending && status === 500) return new SignInFailure('emailCap', error);
   if (isAuthRetryableFetchError(error)) return new SignInFailure('offline', error);
   if (isAuthApiError(error)) {
     const { code } = error;
-    if (code === 'over_email_send_rate_limit') return new SignInFailure('emailCap', error);
+    // The same code covers a second code to one address within a minute ("…only request this
+    // after 59 seconds") and the project's hourly email limit. Only the second is a real cap.
+    if (code === 'over_email_send_rate_limit') {
+      return new SignInFailure(/after \d+ seconds?/.test(error.message) ? 'tooMany' : 'emailCap', error);
+    }
     if (code === 'signup_disabled' || code === 'email_provider_disabled') return new SignInFailure('signupsPaused', error);
     if (code === 'otp_expired' || code === 'otp_disabled') return new SignInFailure('badCode', error);
     if (code === 'validation_failed' || code === 'email_address_invalid') return new SignInFailure('badEmail', error);
