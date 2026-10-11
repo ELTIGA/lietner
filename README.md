@@ -130,7 +130,7 @@ Bug reports and focused pull requests are welcome.
 
 ## Support Lietner
 
-Lietner is free and costs nothing to run until it outgrows the free tiers. If it helps you study, consider [sponsoring it](https://github.com/sponsors/ELTIGA).
+Lietner is free and costs nothing to run until it outgrows the free tiers. If it helps you study, consider [donating to keep it running](https://gogetfunding.com/keep-lietner-running/).
 
 ## License
 
