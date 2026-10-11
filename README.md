@@ -1,13 +1,46 @@
+<div align="center">
+
+<img src="public/logo.svg" alt="Lietner logo" width="96" height="96">
+
 # Lietner
 
-**Leitner-system flashcards on a 3D desk.** Free, open source, works offline, no account needed.
+**Leitner-system flashcards on a 3D desk.**<br>
+Free, open source, works offline, no account needed.
 
+[![Live at lietner.app](https://img.shields.io/badge/live-lietner.app-b8402b)](https://lietner.app)
 [![CI](https://github.com/ELTIGA/lietner/actions/workflows/ci.yml/badge.svg)](https://github.com/ELTIGA/lietner/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white)](tsconfig.json)
+[![PWA: works offline](https://img.shields.io/badge/PWA-works%20offline-5a0fc8)](#features)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-3d6b47)](CONTRIBUTING.md)
 
-**[lietner.app](https://lietner.app)**
+**[Open the app](https://lietner.app)** · [How it works](#how-the-leitner-system-works) · [Features](#features) · [Run it locally](#getting-started) · [Contribute](#contributing) · [Donate](#support-lietner)
 
-![A card lifts out of box 1, flips to show its answer, and files itself into box 2](docs/demo.gif)
+<img src="docs/demo.gif" alt="A card lifts out of box 1, flips to show its answer, and files itself into box 2" width="720">
+
+</div>
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="66%"><img src="docs/screenshots/desktop-question.jpg" alt="Desktop: the question side of a card, lifted above five wooden boxes on a walnut desk"></td>
+    <td width="34%" rowspan="2" align="center"><img src="docs/screenshots/phone-question.jpg" alt="Phone: the portrait desk with boxes in two rows and the question card in front" width="260"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/desktop-answer.jpg" alt="Desktop: the answer side, with Missed and Knew it buttons and their keyboard shortcuts"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/desktop-ai-import.jpg" alt="The starter sheet: copy a prompt into your own AI, then paste its JSON reply to import cards"></td>
+    <td align="center"><img src="docs/screenshots/phone-answer.jpg" alt="Phone: the answer side, with large Missed and Knew it buttons in the thumb zone" width="260"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Desktop: question, answer, and the AI starter sheet</sub></td>
+    <td align="center"><sub>Phone: portrait layout, tap to flip, swipe to grade</sub></td>
+  </tr>
+</table>
+
+## What it is
 
 Five boxes sit on a walnut desk. Each due card lifts out, flips to show the answer, and files itself into the next box, or back into box 1 if you missed it. The same desk works on phones, tablets and desktops. Signing in is optional; it syncs your decks and progress between devices.
 
