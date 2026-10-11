@@ -65,7 +65,7 @@ Cards you know well come back rarely, and cards you struggle with come back ofte
 ## Privacy
 
 - **Guest mode** (no account) keeps everything in your browser's IndexedDB. Nothing about your cards leaves the device.
-- **Signing in** syncs your decks and progress to a database in the EU (Supabase, Frankfurt).
+- **Signing in** syncs your decks and progress to a database in the EU (Supabase, Ireland).
   - Sign in with Google, or with a 6-digit code sent by email. Accounts are for ages 13+.
   - Nothing is shared or public, and grade history never leaves the device.
 - **Telemetry** is limited to aggregate, cookieless page-view counts (Vercel Web Analytics) and crash reports with card text removed (Sentry, EU). There are no ads and no data sales.

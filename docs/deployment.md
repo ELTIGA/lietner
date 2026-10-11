@@ -40,7 +40,7 @@ The Vercel Git integration builds a preview for every pull request. No other set
 
 ## Supabase
 
-1. Create a project. Pick the region carefully: it can't be changed later. lietner.app uses `eu-central-1` (Frankfurt).
+1. Create a project. Pick the region carefully: it can't be changed later. lietner.app uses `eu-west-1` (Ireland).
 2. Apply the schema:
 
    ```bash
@@ -101,7 +101,7 @@ The client already turns off every `dataCollection` category and strips anything
 
 `vercel.json` ships the policy as `Content-Security-Policy-Report-Only`. To enforce it:
 
-1. Replace `PROJECT_REF` in `vercel.json` with your Supabase project ref. If your Sentry project isn't in the EU region, change the `*.ingest.de.sentry.io` host too.
+1. Replace the Supabase host in `vercel.json` (`tpcsptccqgykwufprkto.supabase.co`, the one lietner.app uses) with your own project's. If your Sentry project isn't in the EU region, change the `*.ingest.de.sentry.io` host too.
 2. Optionally, append `; report-uri <endpoint>` to collect violation reports. Sentry provides one under **Project Settings → Security Headers**.
 3. Use the app for a while: sign in with email and Google, sync, review, go offline.
 4. If no violations show up, rename the header key to `Content-Security-Policy`.
