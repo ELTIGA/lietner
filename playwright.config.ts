@@ -19,7 +19,8 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     reducedMotion: 'reduce',
-    trace: 'retain-on-failure',
+    // Recording a trace screencasts every frame, which slows software WebGL on CI runners a lot.
+    trace: CI ? 'on-first-retry' : 'retain-on-failure',
   },
   webServer: {
     command: `VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= VITE_GOOGLE_CLIENT_ID= VITE_SENTRY_DSN= npm run build && npx vite preview --port ${PORT} --strictPort`,
@@ -28,7 +29,17 @@ export default defineConfig({
     timeout: 180_000,
   },
   projects: [
-    { name: 'desktop-chrome', use: { ...devices['Desktop Chrome'] }, testIgnore: /textmode/ },
+    {
+      name: 'desktop-chrome',
+      use: { ...devices['Desktop Chrome'] },
+      testIgnore: /textmode/,
+      // Chromium on a GPU-less CI runner draws every frame with SwiftShader, and two workers share
+      // the CPU: the full-deck review measures about 3.6 s per card there and loading the sample
+      // deck about 5 s, so sessions and single steps need room. The iPhone and iPad projects run
+      // WebKit and finish within the defaults.
+      timeout: CI ? 240_000 : 90_000,
+      expect: { timeout: CI ? 20_000 : 10_000 },
+    },
     { name: 'iphone', use: { ...devices['iPhone 15'] }, testIgnore: /textmode/ },
     { name: 'ipad', use: { ...devices['iPad (gen 7)'] }, testIgnore: /textmode/ },
     {
