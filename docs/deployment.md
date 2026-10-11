@@ -55,18 +55,21 @@ The Vercel Git integration builds a preview for every pull request. No other set
 4. **Authentication → Providers → Email**:
    - Enable the email provider.
    - Set the email OTP length to `6` and the OTP expiry to `3600`.
-5. **Authentication → Email templates**: set both **Magic Link** and **Confirm signup** to show only the code, never a link. On iOS, links open Safari instead of the installed app.
-   - Body: paste `supabase/templates/magic_link.html`. It uses `{{ .Token }}`.
+5. **Email template and SMTP**: hosted templates aren't read from `config.toml`. Supabase's built-in sender is only meant for testing, so use a custom SMTP provider whose sending domain is already verified (SPF, DKIM, DMARC).
+   - `scripts/push-auth-email.mjs` sets both through the Management API: Resend SMTP, the code-only template `supabase/templates/magic_link.html` and its subject for both **Magic Link** and **Confirm signup**, OTP length and expiry, the Site URL and the hourly email limit. Edit its constants for your own sender.
+     ```bash
+     npm run push:auth-email
+     ```
+     It asks for a Supabase access token and the Resend key with hidden input; `SUPABASE_ACCESS_TOKEN` and `RESEND_SMTP_KEY` in the environment also work.
+     After template edits only: `npm run push:auth-email -- --templates-only`.
+   - The email shows only the code, never a link: on iOS, links open Safari instead of the installed app.
    - Check by sending yourself a code. The email must contain six digits and no link.
-6. **Authentication → SMTP settings**: configure a custom SMTP provider. Supabase's built-in sender is only meant for testing.
-   - lietner.app sends through Resend from a dedicated subdomain, with SPF, DKIM and DMARC records.
-   - Then set **Rate limits → emails per hour** to fit the provider's quota.
    - When a send is refused, the app tells people to use Google or keep studying as a guest.
-7. Optionally, **Authentication → Providers → Google**:
+6. Optionally, **Authentication → Providers → Google**:
    - Enable it and paste the Web client ID under **Client IDs**.
    - Leave **Skip nonce check** off.
    - The app uses the ID-token flow (`signInWithIdToken`), so no client secret or redirect URL is needed.
-8. Leave **Settings → API → Max rows** at the default `1000`. The sync engine pulls in pages of 1,000.
+7. Leave **Settings → API → Max rows** at the default `1000`. The sync engine pulls in pages of 1,000.
 
 To pause new sign-ups without affecting existing accounts or guests, turn off **Allow new users to sign up**. New emails then see "New sign-ups are paused".
 

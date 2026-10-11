@@ -119,6 +119,7 @@ cp .env.example .env.local  # paste the URL and key, then restart npm run dev
 ```
 
 - Email codes sent by the local stack appear in the local mail catcher at http://127.0.0.1:54324.
+- After editing `supabase/templates/magic_link.html`, run `npx supabase stop && npx supabase start`: the stack mounts the file at start, so it keeps serving the old copy until then.
 - Google sign-in needs a real OAuth client ID. It only works on `localhost:5173` and in production.
 - Without any `VITE_SUPABASE_*` variables, the app runs guest-only. Preview deploys run this way too.
 

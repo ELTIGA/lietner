@@ -247,14 +247,14 @@ otp_expiry = 3600
 # sender_name = "Admin"
 
 # Email codes, not magic links: links open Safari instead of the installed iOS app.
-# Existing users get the magic-link template; new users get the confirmation template.
+# Existing users get the magic-link template, new users the confirmation one: both use the same file.
 [auth.email.template.magic_link]
 subject = "Your Lietner sign-in code"
 content_path = "./supabase/templates/magic_link.html"
 
 [auth.email.template.confirmation]
 subject = "Your Lietner sign-in code"
-content_path = "./supabase/templates/confirmation.html"
+content_path = "./supabase/templates/magic_link.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]

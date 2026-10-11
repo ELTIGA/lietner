@@ -1,5 +1,78 @@
-<!-- Lietner sign-in code. Shows only the code, never a link: links open Safari instead of the installed iOS app. -->
-<h2 style="font-family: Georgia, serif; color: #2a2420">Your Lietner sign-in code</h2>
-<p style="font-family: system-ui, sans-serif; color: #2a2420">Enter this code in Lietner to sign in:</p>
-<p style="font-family: ui-monospace, monospace; font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #2a2420">{{ .Token }}</p>
-<p style="font-family: system-ui, sans-serif; color: #6b5d50; font-size: 14px">The code expires in one hour. If you didn't ask for it, you can ignore this email.</p>
+<!doctype html>
+<!--
+  Lietner sign-in code, sent for both "Magic Link" (existing users) and "Confirm signup" (new users).
+  Shows only the code, never a link: links open Safari instead of the installed iOS app.
+  Mirrors the app's index-card panel (src/style.css .home-panel): paper on the dark room, eyebrow above a
+  red rule, blue ruled lines below. Tables and inline styles only, no images or web fonts, so it renders
+  the same with images blocked and never fetches anything from a third party.
+  Hosted copy is pushed with `npm run push:auth-email -- --templates-only`.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light only" />
+    <meta name="supported-color-schemes" content="light only" />
+    <title>Your Lietner sign-in code</title>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #15110e; -webkit-text-size-adjust: 100%">
+    <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all">{{ .Token }} is your Lietner sign-in code. It expires in an hour.&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #15110e">
+      <tr>
+        <td align="center" style="padding: 40px 16px 48px">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 480px">
+            <!-- Brand: the stamp mark and the name, as in the app header. -->
+            <tr>
+              <td style="padding: 0 0 22px">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td width="30" height="30" align="center" valign="middle" style="width: 30px; height: 30px; background-color: #b8402b; border-radius: 4px; font-family: 'Fraunces', Georgia, 'Times New Roman', serif; font-size: 18px; font-weight: 700; line-height: 30px; color: #fff6ea">L</td>
+                    <td style="padding-left: 10px; font-family: 'Fraunces', Georgia, 'Times New Roman', serif; font-size: 19px; font-weight: 600; letter-spacing: 0.01em; color: #f4ecd8">Lietner</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <!-- The index card. -->
+            <tr>
+              <td style="background-color: #f4ecd8; border-radius: 3px; border-bottom: 2px solid #0c0907">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="padding: 22px 28px 10px; font-family: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace; font-size: 12px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: #6b5d50">Sign-in code</td>
+                  </tr>
+                  <tr>
+                    <td style="height: 2px; line-height: 2px; font-size: 0; background-color: #d69682">&nbsp;</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 22px 28px 0; font-family: 'Fraunces', Georgia, 'Times New Roman', serif; font-size: 26px; font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; color: #2a2420">Here’s your code</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 28px 0; font-family: 'IBM Plex Sans', -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.6; color: #2a2420">Type it into Lietner to sign in. It expires in an hour.</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 20px 28px 24px">
+                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                          <td align="center" style="padding: 16px 8px 16px 20px; background-color: #fffaf0; border: 1px solid #c9c0b0; border-radius: 6px; font-family: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace; font-size: 32px; font-weight: 600; line-height: 1.2; letter-spacing: 0.3em; color: #2a2420">{{ .Token }}</td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 0 28px"><div style="height: 1px; line-height: 1px; font-size: 0; background-color: #d9d9cf">&nbsp;</div></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 14px 28px 22px; font-family: 'IBM Plex Sans', -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 13px; line-height: 1.6; color: #6b5d50">Didn’t ask for this? You can ignore this email. Nobody can sign in without the code.</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <!-- Footer on the room. -->
+            <tr>
+              <td align="center" style="padding: 22px 0 0; font-family: 'IBM Plex Sans', -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #b8ab98">Lietner &middot; Spaced repetition, on a desk</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
