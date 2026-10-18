@@ -34,8 +34,8 @@
     "@fontsource/fraunces": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/ibm-plex-sans": "^5.3.0",
-    "@sentry/browser": "^11.6.0",
-    "@supabase/supabase-js": "^2.117.3",
+    "@sentry/browser": "^11.8.0",
+    "@supabase/supabase-js": "^2.118.0",
     "@vercel/analytics": "^2.0.1",
     "gsap": "^3.15.0",
     "idb": "^8.0.4",
@@ -44,17 +44,17 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
-    "@playwright/test": "^1.64.0",
+    "@playwright/test": "^1.64.1",
     "@types/node": "^26.6.5",
     "@types/papaparse": "^5.5.2",
     "@types/three": "^0.186.0",
     "@vite-pwa/assets-generator": "^2.0.0",
     "fake-indexeddb": "^6.2.5",
-    "supabase": "^2.120.0",
+    "supabase": "^2.121.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
     "vite-plugin-pwa": "^2.0.0",
-    "vitest": "^5.0.3",
+    "vitest": "^5.0.5",
     "workbox-window": "^7.4.1"
   }
 }
