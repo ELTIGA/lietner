@@ -129,7 +129,7 @@ cp .env.example .env.local  # paste the URL and key, then restart npm run dev
 - `?today=3` shifts the app clock forward 3 days (dev server only), to test schedules.
 - `window.__leitner` exposes the stage, the desk, the card actor and the app in dev.
 - Data is tied to the URL origin. `npm run dev` (:5173), `npm run preview` (:4173) and lietner.app each have their own database.
-- With `npm run dev` running, `node scripts/capture-assets.mjs http://localhost:5173` recaptures `public/og.png` and the demo frames. Then `python3 scripts/frames-to-gif.py` turns the frames into `docs/demo.gif`.
+- With `npm run dev` running, `node scripts/capture-assets.mjs http://localhost:5173` recaptures `public/og.jpg` and the demo frames. Then `python3 scripts/frames-to-gif.py` turns the frames into `docs/demo.gif`.
 
 ## Project structure
 

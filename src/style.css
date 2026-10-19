@@ -1,3 +1,43 @@
+/* Local fallbacks sized to the web fonts' metrics (measured against Arial, Georgia and Courier New), so text
+   painted before the fonts arrive keeps its line breaks and the static intro doesn't jump when they swap in. */
+@font-face {
+  font-family: 'Fraunces Fallback';
+  src: local('Georgia');
+  size-adjust: 93.13%;
+  ascent-override: 105.01%;
+  descent-override: 27.38%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans Fallback';
+  src: local('Arial');
+  font-weight: 400 500;
+  size-adjust: 99.91%;
+  ascent-override: 102.59%;
+  descent-override: 27.52%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans Fallback';
+  src: local('Arial Bold'), local('Arial-BoldMT');
+  font-weight: 600 700;
+  size-adjust: 96.48%;
+  ascent-override: 106.24%;
+  descent-override: 28.5%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono Fallback';
+  src: local('Courier New');
+  size-adjust: 99.98%;
+  ascent-override: 102.52%;
+  descent-override: 27.5%;
+  line-gap-override: 0%;
+}
+
 :root {
   --room: #15110e;
   --paper: #f4ecd8;
@@ -12,9 +52,9 @@
   --miss: #b8402b;
   --radius: 6px;
   --shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.7), 0 2px 0 rgba(0, 0, 0, 0.25);
-  --font-display: 'Fraunces', Georgia, serif;
-  --font-ui: 'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-display: 'Fraunces', 'Fraunces Fallback', Georgia, serif;
+  --font-ui: 'IBM Plex Sans', 'IBM Plex Sans Fallback', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'IBM Plex Mono Fallback', ui-monospace, monospace;
   color-scheme: dark;
 }
 
@@ -288,7 +328,8 @@ kbd {
   pointer-events: auto;
 }
 
-.home-panel {
+.home-panel,
+.intro-panel {
   position: absolute;
   left: 32px;
   bottom: 32px;
@@ -303,7 +344,8 @@ kbd {
   animation: deal 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-.home-panel::before {
+.home-panel::before,
+.intro-panel::before {
   content: '';
   position: absolute;
   left: 0;
@@ -311,6 +353,67 @@ kbd {
   top: 46px;
   height: 2px;
   background: rgba(184, 64, 43, 0.5);
+}
+
+/* The first panel takes over from the static intro in place (see App.start). */
+.home-panel.no-deal {
+  animation: none;
+}
+
+/* ---------- Static intro (index.html): what visitors and crawlers see before the app boots ---------- */
+.intro-panel {
+  position: fixed;
+  max-height: calc(100dvh - 64px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background-attachment: local;
+  /* Content first: no deal-in, so the text paints with the first frame. */
+  animation: none;
+}
+
+.intro-panel.leaving {
+  animation: intro-out 0.2s ease-in forwards;
+}
+
+@keyframes intro-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.intro-title {
+  margin: 0 0 14px;
+  font: 600 24px / 1.2 var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+.intro-lede {
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+.intro-heading {
+  margin: 0 0 8px;
+  font: 500 12px var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-soft);
+}
+
+.intro-steps {
+  margin: 0 0 18px;
+  padding-left: 20px;
+  line-height: 1.45;
+}
+
+.intro-steps li + li {
+  margin-top: 4px;
+}
+
+.intro-note {
+  margin: 12px 0 0;
+  color: var(--ink-soft);
+  font-size: 13px;
 }
 
 @keyframes deal {
@@ -342,7 +445,7 @@ kbd {
 
 .welcome .home-status {
   font-size: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .inline-form {
@@ -859,15 +962,27 @@ kbd {
 }
 
 .panel-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
+  display: grid;
+  gap: 6px;
   margin-top: 16px;
   font-size: 13px;
 }
 
+.panel-links-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+}
+
+/* Filled in at build time from content/ (build/content.ts): links joined by " · ". */
+.guide-links {
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
 .panel-credit {
-  flex-basis: 100%;
+  margin: 0;
   color: var(--ink-soft);
 }
 
@@ -1318,7 +1433,8 @@ body:has(.review-hud .review-controls) .toasts {
     margin-left: 0;
   }
 
-  .home-panel {
+  .home-panel,
+  .intro-panel {
     left: max(12px, env(safe-area-inset-left));
     right: max(12px, env(safe-area-inset-right));
     bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px));
@@ -1330,8 +1446,13 @@ body:has(.review-hud .review-controls) .toasts {
     font-size: 23px;
   }
 
-  .welcome .home-status {
+  .welcome .home-status,
+  .intro-title {
     font-size: 21px;
+  }
+
+  .intro-panel {
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   }
 
   .inline-form {

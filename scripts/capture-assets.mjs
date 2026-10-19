@@ -3,7 +3,7 @@
  *   npm run dev            # in another terminal
  *   node scripts/capture-assets.mjs [http://localhost:5173]
  *   python3 scripts/frames-to-gif.py
- * Writes public/og.png (1200×630) and frames for docs/demo.gif. Animations are stepped frame by
+ * Writes public/og.jpg (1200×630) and frames for docs/demo.gif. Animations are stepped frame by
  * frame, so the result is smooth even though headless WebGL renders slowly.
  */
 import { mkdir, rm, writeFile } from 'node:fs/promises';
@@ -36,7 +36,7 @@ const idle = (page) => page.waitForFunction(() => !window.__leitner.actor.busy);
   await page.evaluate(() => window.__leitner.app.startReview());
   await idle(page);
   await settle(page);
-  await page.screenshot({ path: 'public/og.png' });
+  await page.screenshot({ path: 'public/og.jpg', type: 'jpeg', quality: 82 });
   await page.context().close();
 }
 

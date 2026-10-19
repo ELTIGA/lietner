@@ -340,6 +340,15 @@ footer {
   text-align: center;
 }
 
+footer a {
+  color: inherit;
+}
+
+/* Links to the guides, filled in at build time from content/. */
+.guide-links {
+  margin-top: 6px;
+}
+
 @media (max-width: 480px) {
   .box {
     min-height: 78px;

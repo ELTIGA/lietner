@@ -73,8 +73,10 @@ Reply with exactly one JSON code block in this shape, and nothing else:
   },
 
   welcome: {
-    eyebrow: 'Spaced repetition, on a desk',
-    title: 'Five boxes. Cards climb when you know them, fall back when you don’t.',
+    // Matches the static intro in index.html, which this panel replaces on boot.
+    eyebrow: 'Lietner · spaced repetition',
+    title: 'Free Leitner-system flashcards on a 3D desk',
+    lede: 'A flashcard app for students 13 and up. Open source, works offline, no account needed.',
     deckNamePlaceholder: 'Deck name, e.g. Spanish verbs',
     deckNameLabel: 'Deck name',
     defaultDeckName: 'My first deck',
@@ -275,16 +277,6 @@ Reply with exactly one JSON code block in this shape, and nothing else:
     installBody:
       'Safari can clear a website’s data when you haven’t visited for a week. Add Lietner to your Home Screen to keep your cards: tap Share, then Add to Home Screen.',
     installDismiss: 'Got it',
-  },
-
-  footer: {
-    label: 'About Lietner',
-    privacy: 'Privacy',
-    terms: 'Terms',
-    source: 'Source',
-    support: 'Support',
-    builtBy: 'Built with love by',
-    author: 'Ahmed Eltigani',
   },
 
   dialog: {

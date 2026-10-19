@@ -54,12 +54,22 @@ export class App {
   private reloadPending = false;
   private installHintDismissed = true;
   private readonly reviewListeners = new Set<(reviewing: boolean) => void>();
+  /** The static intro from index.html, shown until the first real panel replaces it. */
+  private intro: HTMLElement | null;
+  /** The site links from index.html (crawlers read them there), moved into whichever panel is showing. */
+  private readonly siteLinks: HTMLElement;
   readonly account: Account;
 
   constructor(
     host: HTMLElement,
     readonly deps: AppDeps,
   ) {
+    this.intro = host.querySelector<HTMLElement>('.intro-panel');
+    this.siteLinks = host.querySelector<HTMLElement>('#site-links') ?? h('nav', { class: 'panel-links' });
+    // The intro keeps a copy while it fades out, so it doesn't shrink and shift as the links move to the panel.
+    const copy = this.siteLinks.cloneNode(true) as HTMLElement;
+    copy.removeAttribute('id');
+    if (this.siteLinks.parentElement) this.siteLinks.replaceWith(copy);
     this.editor = new DeckEditor(this);
     this.settings = new SettingsDialog(this);
     this.account = new Account(this);
@@ -81,6 +91,18 @@ export class App {
     const lastId = await this.deps.repo.getMeta<string>(META_LAST_DECK);
     this.installHintDismissed = !isIosSafari() || !!(await this.deps.repo.getMeta<boolean>(META_INSTALL_HINT));
     await this.selectDeck(this.decks.find((deck) => deck.id === lastId) ?? this.decks[0] ?? null);
+    // The panel lands on top of the intro already in place; the intro fades out behind it.
+    if (this.intro) {
+      const intro = this.intro;
+      this.intro = null;
+      this.stage.firstElementChild?.classList.add('no-deal');
+      intro.inert = true;
+      intro.classList.add('leaving');
+      const done = () => intro.remove();
+      Promise.all(intro.getAnimations().map((animation) => animation.finished)).then(done, done);
+      // Background tabs may never run the fade; don't leave the intro behind the panel.
+      setTimeout(done, 400);
+    }
     // Local data is on screen; the account (and its network) comes second.
     void this.account.restore();
   }
@@ -303,7 +325,7 @@ export class App {
     }
     const total = this.cards.length;
     if (total === 0) {
-      this.starter = new StarterSheet(this, footerLinks());
+      this.starter = new StarterSheet(this, this.siteLinks);
       this.stage.replaceChildren(this.starter.element);
       return;
     }
@@ -324,7 +346,7 @@ export class App {
         h('h1', { class: 'home-status', 'aria-live': 'polite' }, status),
         h('p', { class: 'home-meta' }, t.home.meta(total, counts[MASTERED])),
         due > 0 && h('button', { class: 'btn primary large', onclick: () => this.startReview() }, t.home.startReview, kbd('↵')),
-        footerLinks(),
+        this.siteLinks,
       ),
     );
   }
@@ -340,10 +362,11 @@ export class App {
       { class: 'home-panel welcome' },
       h('p', { class: 'eyebrow' }, t.welcome.eyebrow),
       h('h1', { class: 'home-status' }, t.welcome.title),
+      h('p', { class: 'home-meta' }, t.welcome.lede),
       h('form', { class: 'inline-form', onsubmit: create }, name, h('button', { class: 'btn primary', type: 'submit' }, t.welcome.create)),
       h('button', { class: 'btn link', onclick: () => void this.loadSample() }, t.welcome.sample),
       !this.installHintDismissed && this.installHint(),
-      footerLinks(),
+      this.siteLinks,
     );
   }
 
@@ -394,24 +417,6 @@ export class App {
       this.openEditor();
     }
   };
-}
-
-/** Privacy, terms, source, the donation page and author credit, at the foot of the home panel. */
-function footerLinks(): HTMLElement {
-  return h(
-    'nav',
-    { class: 'panel-links', 'aria-label': t.footer.label },
-    h('a', { href: '/privacy' }, t.footer.privacy),
-    h('a', { href: '/terms' }, t.footer.terms),
-    h('a', { href: 'https://github.com/ELTIGA/lietner', target: '_blank', rel: 'noopener' }, t.footer.source),
-    h('a', { href: '/support' }, t.footer.support),
-    h(
-      'span',
-      { class: 'panel-credit' },
-      `${t.footer.builtBy} `,
-      h('a', { href: 'https://ahmedeltigani.com', target: '_blank', rel: 'noopener' }, t.footer.author),
-    ),
-  );
 }
 
 export function relativeDay(day: number): string {

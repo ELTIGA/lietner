@@ -17,27 +17,66 @@
       content="Five boxes on a desk. Cards climb when you know them and fall back when you don't. Free, open source, works offline."
     />
     <meta property="og:url" content="https://lietner.app/" />
-    <meta property="og:image" content="https://lietner.app/og.png" />
+    <meta property="og:image" content="https://lietner.app/og.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="A flashcard lifted out of the first of five wooden Leitner boxes on a walnut desk" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Lietner: Leitner-system flashcards on a 3D desk" />
     <meta name="twitter:description" content="Free, open-source Leitner flashcards on a 3D desk. Works offline, optional sync." />
-    <meta name="twitter:image" content="https://lietner.app/og.png" />
+    <meta name="twitter:image" content="https://lietner.app/og.jpg" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Lietner",
-        "url": "https://lietner.app/",
-        "description": "Leitner-system flashcards on a 3D desk. Free, works offline, optional sync between devices.",
-        "applicationCategory": "EducationalApplication",
-        "operatingSystem": "Any (web browser)",
-        "isAccessibleForFree": true,
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-        "license": "https://opensource.org/licenses/MIT",
-        "author": { "@type": "Person", "name": "Ahmed Eltigani", "url": "https://ahmedeltigani.com" }
+        "@graph": [
+          {
+            "@type": "WebApplication",
+            "@id": "https://lietner.app/#app",
+            "name": "Lietner",
+            "alternateName": ["Lietner flashcards", "Lietner Leitner app"],
+            "url": "https://lietner.app/",
+            "description": "Free Leitner-system flashcards on a 3D desk. Five boxes: cards you know move up, cards you miss go back to box 1. Works offline, no account needed, open source.",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Any (web browser)",
+            "browserRequirements": "Requires JavaScript. Uses WebGL for the 3D desk, with a text mode for browsers without it.",
+            "inLanguage": "en",
+            "isAccessibleForFree": true,
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "license": "https://opensource.org/licenses/MIT",
+            "screenshot": "https://lietner.app/og.jpg",
+            "image": "https://lietner.app/og.jpg",
+            "featureList": [
+              "Leitner system with five boxes due every 1, 2, 4, 8 and 16 days",
+              "Flashcards on a 3D desk, with a text mode for browsers without WebGL",
+              "Works fully offline as an installable app",
+              "No account needed; optional sync between devices",
+              "Import CSV/TSV, including Anki's plain-text export",
+              "Write cards with your own AI chat and paste them in as JSON",
+              "Keyboard shortcuts on desktop, tap and swipe on touch screens",
+              "JSON export and import of everything"
+            ],
+            "audience": { "@type": "EducationalAudience", "educationalRole": "student" },
+            "typicalAgeRange": "13-",
+            "sameAs": ["https://github.com/ELTIGA/lietner"],
+            "author": { "@id": "https://ahmedeltigani.com/#person" },
+            "isPartOf": { "@id": "https://lietner.app/#website" }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://lietner.app/#website",
+            "url": "https://lietner.app/",
+            "name": "Lietner",
+            "alternateName": "Lietner flashcards",
+            "inLanguage": "en",
+            "publisher": { "@id": "https://ahmedeltigani.com/#person" }
+          },
+          {
+            "@type": "Person",
+            "@id": "https://ahmedeltigani.com/#person",
+            "name": "Ahmed Eltigani",
+            "url": "https://ahmedeltigani.com"
+          }
+        ]
       }
     </script>
     <meta name="theme-color" content="#15110e" />
@@ -50,7 +89,37 @@
   </head>
   <body>
     <div id="scene" aria-hidden="true"></div>
-    <div id="app"></div>
+    <div id="app">
+      <!-- What visitors and crawlers see before the app boots. App.start() swaps it for the live panel and
+           moves #site-links into that panel (src/ui/app.ts). Keep the copy in step with t.welcome. -->
+      <section class="intro-panel" aria-labelledby="intro-title">
+        <p class="eyebrow">Lietner · spaced repetition</p>
+        <h1 id="intro-title" class="intro-title">Free Leitner-system flashcards on a 3D desk</h1>
+        <p class="intro-lede">
+          Lietner is a flashcard app that runs the Leitner system on a wooden desk in your browser. It is made for
+          students 13 and up, it is free and open source, it works offline, and you don’t need an account.
+        </p>
+        <h2 class="intro-heading">How it works</h2>
+        <ol class="intro-steps">
+          <li>Your cards sit in five boxes. Box 1 comes due every day, then boxes 2 to 5 every 2, 4, 8 and 16 days.</li>
+          <li><strong>Knew it</strong> moves a card up one box, so you see it less often.</li>
+          <li><strong>Missed</strong> sends it back to box 1, due again tomorrow.</li>
+        </ol>
+        <button class="btn primary large intro-start" type="button">Start studying</button>
+        <noscript><p class="intro-note">Lietner runs in your browser and needs JavaScript turned on.</p></noscript>
+        <p class="intro-note">Lietner is the app; the Leitner system is the study method it’s built on.</p>
+        <nav id="site-links" class="panel-links" aria-label="About Lietner">
+          <!-- guide-links -->
+          <p class="panel-links-row">
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+            <a href="https://github.com/ELTIGA/lietner" target="_blank" rel="noopener">Source on GitHub</a>
+            <a href="/support">Support</a>
+          </p>
+          <p class="panel-credit">Built with love by <a href="https://ahmedeltigani.com" target="_blank" rel="noopener">Ahmed Eltigani</a></p>
+        </nav>
+      </section>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

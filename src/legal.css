@@ -138,3 +138,8 @@ footer {
 footer a {
   color: inherit;
 }
+
+/* Links to the guides, filled in at build time from content/. */
+.guide-links {
+  margin-top: 6px;
+}

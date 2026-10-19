@@ -1,0 +1,100 @@
+/* Guide pages: the legal page's paper sheet, plus what longer articles need. */
+
+h3 {
+  margin: 24px 0 4px;
+  font:
+    600 17px / 1.3 'IBM Plex Sans',
+    system-ui,
+    sans-serif;
+}
+
+code,
+pre {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 14px;
+}
+
+pre {
+  overflow-x: auto;
+  padding: 14px 16px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: #fbf3e2;
+  white-space: pre-wrap;
+}
+
+blockquote {
+  margin: 20px 0;
+  padding: 2px 0 2px 16px;
+  border-left: 3px solid var(--stamp);
+  color: var(--ink-soft);
+}
+
+/* Wide comparison tables scroll inside the sheet instead of widening the page. */
+.table-scroll {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.table-scroll table {
+  min-width: 520px;
+}
+
+th {
+  font-weight: 600;
+}
+
+.steps ol {
+  padding-left: 22px;
+}
+
+.steps li + li {
+  margin-top: 10px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 6px;
+  background: var(--stamp);
+  box-shadow: 0 2px 0 #7c2718;
+  color: #fff6ea;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-top: 40px;
+  padding: 18px 20px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: #fbf3e2;
+}
+
+.cta p {
+  flex: 1 1 280px;
+  margin: 0;
+}
+
+.site-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 18px;
+}
+
+.site-footer a[aria-current='page'] {
+  color: #f4ecd8;
+  text-decoration: none;
+}

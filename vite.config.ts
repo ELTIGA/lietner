@@ -1,14 +1,19 @@
 import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vitest/config';
+import { contentPages, loadPages, pageInputs } from './build/content.ts';
+
+// Guides and comparisons, written in content/*.md and built into plain HTML pages.
+const pages = loadPages('content');
 
 export default defineConfig({
   // three.js alone is ~600 kB minified; one chunk is fine for a static app cached by the service worker.
   build: {
     chunkSizeWarningLimit: 900,
-    // The legal and donation pages are plain documents next to the app, served at /privacy, /terms and /support.
-    rollupOptions: { input: { main: 'index.html', privacy: 'privacy.html', terms: 'terms.html', support: 'support.html' } },
+    // The legal, donation and guide pages are plain documents next to the app, served at /privacy, /terms, /support and /<slug>.
+    rollupOptions: { input: { main: 'index.html', privacy: 'privacy.html', terms: 'terms.html', support: 'support.html', ...pageInputs(pages) } },
   },
   plugins: [
+    contentPages(pages),
     VitePWA({
       // Updates wait for the user: the app shows a "new version" toast, never mid-review.
       registerType: 'prompt',
@@ -36,10 +41,11 @@ export default defineConfig({
         // Everything a guest needs offline, including the Latin font files. Other font subsets
         // and the sign-in SDK chunk are cached the first time they're used.
         globPatterns: ['**/*.{html,css,svg,png,ico}', 'assets/*.js', 'assets/*-latin-[0-9]*.woff2', 'assets/*-latin-ext-*.woff2'],
-        globIgnores: ['assets/session-*.js', 'assets/sentry-*.js', 'og.png'],
+        globIgnores: ['assets/session-*.js', 'assets/sentry-*.js', 'og.jpg'],
         navigateFallback: 'index.html',
-        // The legal and donation pages are their own documents, served from the precache by their clean URLs.
-        navigateFallbackDenylist: [/^\/privacy/, /^\/terms/, /^\/support/],
+        // The app lives only at / (dev flags like ?mode=text included). Every other page is its own document,
+        // served from the precache by its clean URL, so guides published later work even on an older worker.
+        navigateFallbackAllowlist: [/^\/(?:$|\?)/],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
