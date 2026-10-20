@@ -107,6 +107,7 @@ npm run dev       # http://localhost:5173, guest mode
 | `npm run test:db` | Row-level security and trigger tests (pgTAP, needs the local Supabase stack) |
 | `npm run test:integration` | Sync engine against the local Supabase stack |
 | `npm run icons` | Regenerate the favicon and app icons from `public/logo.svg` |
+| `npm run indexnow` | Ask Bing and other IndexNow engines to re-crawl every URL in the live sitemap. Run it after a deploy that adds or changes pages, once that deploy is live |
 
 ### Sync and sign-in locally
 

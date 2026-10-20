@@ -16,7 +16,8 @@
       "has": [{ "type": "host", "value": "lietner.vercel.app" }],
       "destination": "https://lietner.app/:path*",
       "permanent": true
-    }
+    },
+    { "source": "/og.png", "destination": "/og.jpg", "permanent": true }
   ],
   "headers": [
     {
